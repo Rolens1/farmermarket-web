@@ -40,3 +40,18 @@ vi.mock("next/image", () => ({
     );
   },
 }));
+
+// Mock next/link to behave like a regular anchor tag in tests
+vi.mock("next/link", () => {
+  return {
+    __esModule: true,
+    default: ({
+      children,
+      ...props
+    }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+      return React.createElement("a", props, children);
+    },
+  };
+});
+
+// Removed Jest global mocks as they are incompatible with Vitest. Use `vi` directly for mocking in tests.

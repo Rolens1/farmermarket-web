@@ -5,7 +5,8 @@ import "./globals.css";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Leaf } from "lucide-react";
-import { Navbar } from "../../components/ui/Navbar";
+import { Navbar } from "../components/Navbar";
+import { usePathname } from "next/navigation";
 
 export default function RootLayout({
   children,
@@ -13,18 +14,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [currentPage, setCurrentPage] = useState("");
+  const pathname = usePathname();
 
-  const handleCurrentPageChange = (page: string) => {
+  useEffect(() => {
+    const page = pathname === "/" ? "home" : pathname.slice(1);
     setCurrentPage(page);
-  };
-
-  useEffect(() => {}, [currentPage]);
-  // Handle side effects based on currentPage
+  }, [pathname]);
 
   return (
     <html lang="en">
-      <Navbar setCurrentPage={handleCurrentPageChange} />
-      <body>{children}</body>
+      <body>
+        {currentPage !== "login" && (
+          <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        )}
+        {children}
+      </body>
     </html>
   );
 }
