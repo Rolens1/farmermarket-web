@@ -40,6 +40,30 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Vitest
+.vitest/
+
+# Jest
+jest.config.js
+
+# Testing-library
+__tests__/
+__mocks__/
+
+# Additional IDE files
+*.iml
+*.ipr
+*.iws
+
+# Additional OS files
+*.swp
+*.swo
+
+# Build cache
+.cache-loader/
+
+# Storybook
+.storybook-out/
 # IDE specific files
 .vscode/
 .idea/
