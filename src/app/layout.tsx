@@ -5,7 +5,7 @@ import "./globals.css";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Leaf } from "lucide-react";
-import { Navbar } from "../../components/ui/Navbar";
+import { Navbar } from "../components/Navbar";
 
 export default function RootLayout({
   children,
@@ -23,10 +23,13 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <Navbar
-        currentPage={currentPage}
-        setCurrentPage={handleCurrentPageChange}
-      />
+      {currentPage !== "login" && (
+        <Navbar
+          currentPage={currentPage}
+          setCurrentPage={handleCurrentPageChange}
+        />
+      )}
+
       <body>{children}</body>
     </html>
   );

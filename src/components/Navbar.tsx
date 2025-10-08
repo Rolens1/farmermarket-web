@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Leaf } from "lucide-react";
 import { useEffect } from "react";
-import { Button } from "./button";
+import { Button } from "./ui/button";
 
 export function Navbar({
   currentPage,
