@@ -9,6 +9,7 @@ export default defineConfig({
     include: [
       "src/**/*.{test,spec}.{ts,tsx}",
       "tests/**/*.{test,spec}.{ts,tsx}",
+      "components/ui/__tests__/**/*.{test,spec}.{ts,tsx}",
     ],
     css: true, // allow importing css/modules in components
     coverage: {

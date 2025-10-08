@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Leaf } from "lucide-react";
@@ -6,8 +7,10 @@ import { useEffect } from "react";
 import { Button } from "./button";
 
 export function Navbar({
+  currentPage,
   setCurrentPage,
 }: {
+  currentPage: string;
   setCurrentPage: (page: string) => void;
 }) {
   const navLinks = [
@@ -22,8 +25,10 @@ export function Navbar({
   // Update currentPage based on the current pathname
   useEffect(() => {
     const currentPath = pathname.split("/")[1] || "home";
-    setCurrentPage(currentPath);
-  }, [pathname, setCurrentPage]);
+    if (currentPath !== currentPage) {
+      setCurrentPage(currentPath);
+    }
+  }, [pathname, currentPage, setCurrentPage]);
 
   return (
     <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm backdrop-blur-sm bg-dark/90">
@@ -52,6 +57,7 @@ export function Navbar({
                   ? "active text-primary"
                   : "text-foreground/70 hover:text-foreground"
               }`}
+              onClick={() => setCurrentPage(link.name.toLowerCase())}
             >
               {link.name}
             </Link>

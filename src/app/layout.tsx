@@ -23,7 +23,10 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <Navbar setCurrentPage={handleCurrentPageChange} />
+      <Navbar
+        currentPage={currentPage}
+        setCurrentPage={handleCurrentPageChange}
+      />
       <body>{children}</body>
     </html>
   );
