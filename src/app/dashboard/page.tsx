@@ -65,10 +65,26 @@ import { StatsCard } from "@/components/StatsCard";
 import { ActivityItem } from "@/components/ActivityItem";
 import { ProductBar } from "@/components/ui/product-bar";
 import { InsightRow } from "@/components/ui/insight-row";
+import { MyListingDialog } from "@/components/MyListingModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState("dashboard");
+  const [listingDialogOpen, setListingDialogOpen] = useState(false);
+  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
   const router = useRouter();
 
   const signOut = () => {
@@ -76,13 +92,27 @@ export default function DashboardPage() {
     router.push("/login");
   };
 
-  const listings = [
+  const handleNewListing = () => {
+    console.log("New Listing button clicked"); // Debug log
+    setSelectedListing(null);
+    setListingDialogOpen(true);
+  };
+
+  const handleEditListing = (listing: Listing) => {
+    setSelectedListing(listing);
+    setListingDialogOpen(true);
+  };
+
+  const [currentListings, setCurrentListings] = useState([
     {
       id: 1,
       title: "Organic Tomatoes",
+      category: "vegetables",
+      description: "Fresh organic tomatoes from our greenhouse",
       status: "active",
-      price: "$4.99/lb",
-      stock: "50 lbs",
+      price: "4.99",
+      unit: "lb",
+      stock: "50",
       views: 245,
       sales: 28,
       revenue: "$139.72",
@@ -91,9 +121,12 @@ export default function DashboardPage() {
     {
       id: 2,
       title: "Fresh Lettuce",
+      category: "vegetables",
+      description: "Crisp romaine lettuce, harvested daily",
       status: "active",
-      price: "$2.99/lb",
-      stock: "30 lbs",
+      price: "2.99",
+      unit: "lb",
+      stock: "30",
       views: 189,
       sales: 45,
       revenue: "$134.55",
@@ -102,9 +135,12 @@ export default function DashboardPage() {
     {
       id: 3,
       title: "Sweet Corn",
+      category: "vegetables",
+      description: "Sweet, tender corn picked at peak ripeness",
       status: "low_stock",
-      price: "$3.49/lb",
-      stock: "8 lbs",
+      price: "3.49",
+      unit: "lb",
+      stock: "8",
       views: 98,
       sales: 12,
       revenue: "$41.88",
@@ -113,9 +149,12 @@ export default function DashboardPage() {
     {
       id: 4,
       title: "Farm Eggs",
+      category: "dairy",
+      description: "Free-range eggs from our happy hens",
       status: "active",
-      price: "$5.99/dozen",
-      stock: "20 dozen",
+      price: "5.99",
+      unit: "dozen",
+      stock: "20",
       views: 312,
       sales: 67,
       revenue: "$401.33",
@@ -124,15 +163,141 @@ export default function DashboardPage() {
     {
       id: 5,
       title: "Organic Honey",
+      category: "honey",
+      description: "Raw, unfiltered honey from local bees",
       status: "active",
-      price: "$12.99/jar",
-      stock: "15 jars",
+      price: "12.99",
+      unit: "jar",
+      stock: "15",
       views: 156,
       sales: 34,
       revenue: "$441.66",
       lastUpdated: "6 hours ago",
     },
-  ];
+  ]);
+
+  const handleSaveListing = (listingData: Partial<Listing>) => {
+    if (listingData.id) {
+      // Update existing listing
+      setCurrentListings((prev) =>
+        prev.map((item) =>
+          item.id === listingData.id
+            ? {
+                ...item,
+                ...listingData,
+                lastUpdated: "Just now",
+              }
+            : item
+        )
+      );
+    } else {
+      // Create new listing
+      const newListing = {
+        id: Math.max(...currentListings.map((l) => l.id)) + 1,
+        title: listingData.title ?? "",
+        category: listingData.category ?? "",
+        description: listingData.description ?? "",
+        status: listingData.status ?? "active",
+        price: listingData.price ?? "",
+        unit: listingData.unit ?? "",
+        stock: listingData.stock ?? "",
+        views: 0,
+        sales: 0,
+        revenue: "$0.00",
+        lastUpdated: "Just now",
+      };
+      setCurrentListings((prev) => [...prev, newListing]);
+    }
+  };
+
+  type Listing = {
+    id: number;
+    title: string;
+    category: string;
+    description: string;
+    status: string;
+    price: string;
+    unit: string;
+    stock: string;
+    views: number;
+    sales: number;
+    revenue: string;
+    lastUpdated: string;
+  };
+
+  const handleDeleteClick = (listing: Listing) => {
+    setListingToDelete(listing);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (listingToDelete) {
+      setCurrentListings((prev) =>
+        prev.filter((item) => item.id !== listingToDelete.id)
+      );
+      toast.success("Listing deleted successfully");
+      setDeleteDialogOpen(false);
+      setListingToDelete(null);
+    }
+  };
+
+  //   const listings = [
+  //     {
+  //       id: 1,
+  //       title: "Organic Tomatoes",
+  //       status: "active",
+  //       price: "$4.99/lb",
+  //       stock: "50 lbs",
+  //       views: 245,
+  //       sales: 28,
+  //       revenue: "$139.72",
+  //       lastUpdated: "2 hours ago",
+  //     },
+  //     {
+  //       id: 2,
+  //       title: "Fresh Lettuce",
+  //       status: "active",
+  //       price: "$2.99/lb",
+  //       stock: "30 lbs",
+  //       views: 189,
+  //       sales: 45,
+  //       revenue: "$134.55",
+  //       lastUpdated: "5 hours ago",
+  //     },
+  //     {
+  //       id: 3,
+  //       title: "Sweet Corn",
+  //       status: "low_stock",
+  //       price: "$3.49/lb",
+  //       stock: "8 lbs",
+  //       views: 98,
+  //       sales: 12,
+  //       revenue: "$41.88",
+  //       lastUpdated: "1 day ago",
+  //     },
+  //     {
+  //       id: 4,
+  //       title: "Farm Eggs",
+  //       status: "active",
+  //       price: "$5.99/dozen",
+  //       stock: "20 dozen",
+  //       views: 312,
+  //       sales: 67,
+  //       revenue: "$401.33",
+  //       lastUpdated: "3 hours ago",
+  //     },
+  //     {
+  //       id: 5,
+  //       title: "Organic Honey",
+  //       status: "active",
+  //       price: "$12.99/jar",
+  //       stock: "15 jars",
+  //       views: 156,
+  //       sales: 34,
+  //       revenue: "$441.66",
+  //       lastUpdated: "6 hours ago",
+  //     },
+  //   ];
 
   const weeklyData = [
     { day: "Mon", revenue: 420, orders: 12, views: 145 },
@@ -284,7 +449,10 @@ export default function DashboardPage() {
                   <Download className="w-4 h-4 mr-2" />
                   Export
                 </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button
+                  onClick={handleNewListing}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   New Listing
                 </Button>
@@ -651,7 +819,7 @@ export default function DashboardPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {listings.map((listing) => (
+                      {currentListings.map((listing) => (
                         <TableRow
                           key={listing.id}
                           className="border-slate-200 hover:bg-slate-50"
@@ -702,7 +870,11 @@ export default function DashboardPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleEditListing(listing as Listing)
+                                  }
+                                >
                                   <Edit className="w-4 h-4 mr-2" />
                                   Edit
                                 </DropdownMenuItem>
@@ -710,7 +882,12 @@ export default function DashboardPage() {
                                   <Eye className="w-4 h-4 mr-2" />
                                   View Details
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600">
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleDeleteClick(listing as Listing)
+                                  }
+                                  className="text-red-600"
+                                >
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
                                 </DropdownMenuItem>
@@ -727,6 +904,40 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* My Listing Dialog */}
+      <MyListingDialog
+        open={listingDialogOpen}
+        onOpenChange={setListingDialogOpen}
+        listing={selectedListing}
+        onSave={handleSaveListing}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-900">
+              Delete Listing
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-600">
+              Are you sure you want to delete &quot;{listingToDelete?.title}
+              &quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-slate-200 text-slate-700 hover:bg-slate-50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
