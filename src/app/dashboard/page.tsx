@@ -77,6 +77,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { signOut } from "../api/auth/login";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -87,9 +88,9 @@ export default function DashboardPage() {
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
   const router = useRouter();
 
-  const signOut = () => {
-    // Implement sign-out logic here
-    router.push("/login");
+  const handleLogout = () => {
+    signOut();
+    router.push("/");
   };
 
   const handleNewListing = () => {
@@ -419,7 +420,7 @@ export default function DashboardPage() {
 
             {/** Logout */}
             <button
-              onClick={() => signOut()}
+              onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-slate-700 hover:bg-slate-50"
             >
               <LogOut className="w-5 h-5" />

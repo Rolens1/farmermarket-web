@@ -9,14 +9,16 @@ import { Button } from "./ui/button";
 export function Navbar({
   currentPage,
   setCurrentPage,
+  user = null,
 }: {
   currentPage: string;
   setCurrentPage: (page: string) => void;
+  user: { id: string; email: string } | null;
 }) {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Browse", path: "/browse" },
-    { name: "Contact", path: "/contact" },
+    // { name: "Contact", path: "/contact" },
   ];
 
   const router = useRouter();
@@ -62,17 +64,28 @@ export function Navbar({
               {link.name}
             </Link>
           ))}
-          <Link
-            href="/login"
-            className="text-foreground/70 hover:text-foreground transition-colors"
-          >
-            Login
-          </Link>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="text-foreground/70 hover:text-foreground transition-colors"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="text-foreground/70 hover:text-foreground transition-colors"
+            >
+              Login
+            </Link>
+          )}
         </nav>
         {/* CTA Button */}
-        <Button>
-          <Link href="/dashboard">List Your Produce</Link>
-        </Button>
+        {currentPage !== "dashboard" && (
+          <Button>
+            <Link href="/dashboard">List Your Produce</Link>
+          </Button>
+        )}
       </div>
     </header>
   );

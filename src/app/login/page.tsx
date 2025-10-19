@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { signIn } from "../api/auth/login";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [isSignup, setIsSignup] = useState(false);
@@ -16,6 +17,8 @@ export default function LoginPage() {
     confirmPassword: "",
   });
 
+  const router = useRouter();
+
   const loginHandler = async (event: React.FormEvent) => {
     event.preventDefault();
     // Implement login logic here
@@ -23,6 +26,7 @@ export default function LoginPage() {
     const password = formData.password;
     console.log("Email:", email, "Password:", password);
     signIn(email, password);
+    router.push("/dashboard");
   };
 
   return (
