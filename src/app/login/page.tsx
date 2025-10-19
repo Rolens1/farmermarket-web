@@ -6,9 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { signIn } from "../api/auth/login";
 
 export default function LoginPage() {
   const [isSignup, setIsSignup] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const loginHandler = async (event: React.FormEvent) => {
+    event.preventDefault();
+    // Implement login logic here
+    const email = formData.email;
+    const password = formData.password;
+    console.log("Email:", email, "Password:", password);
+    signIn(email, password);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-8 py-16 bg-gradient-to-b from-secondary/20 to-background">
@@ -26,7 +41,7 @@ export default function LoginPage() {
 
         {/* Form */}
         <div className="bg-card rounded-3xl p-8 shadow-xl border border-border">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={loginHandler}>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -34,6 +49,10 @@ export default function LoginPage() {
                 type="email"
                 placeholder="you@example.com"
                 className="rounded-2xl"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -43,6 +62,10 @@ export default function LoginPage() {
                 type="password"
                 placeholder="••••••••"
                 className="rounded-2xl"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
               />
             </div>
             {isSignup && (
@@ -53,14 +76,22 @@ export default function LoginPage() {
                   type="password"
                   placeholder="••••••••"
                   className="rounded-2xl"
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
                 />
               </div>
             )}
             <Button
-              type="button"
+              type="submit"
               className="w-full rounded-full bg-primary hover:bg-primary/90 py-6"
             >
-              <Link href="/dashboard">{isSignup ? "Sign Up" : "Log In"}</Link>
+              {/* <Link href="/dashboard">{isSignup ? "Sign Up" : "Log In"}</Link> */}
+              <span>{isSignup ? "Sign Up" : "Log In"}</span>
             </Button>
             <div className="text-center">
               <button
