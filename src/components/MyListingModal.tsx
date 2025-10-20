@@ -20,10 +20,12 @@ import {
 } from "./ui/select";
 import { Upload, X, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { createProduct } from "@/app/api/product/products";
+import { CreateProductDTO } from "@/app/api/product/dto/create-product.dto";
 
 interface Listing {
   id?: number;
-  title: string;
+  name: string;
   description?: string;
   category: string;
   price: string;
@@ -49,7 +51,7 @@ export function MyListingDialog({
   const isEditing = !!listing;
 
   const [formData, setFormData] = useState<Listing>({
-    title: listing?.title || "",
+    name: listing?.name || "",
     description: listing?.description || "",
     category: listing?.category || "",
     price: listing?.price || "",
@@ -72,8 +74,8 @@ export function MyListingDialog({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.title.trim()) {
-      newErrors.title = "Product name is required";
+    if (!formData.name.trim()) {
+      newErrors.name = "Product name is required";
     }
 
     if (!formData.category) {
@@ -104,10 +106,25 @@ export function MyListingDialog({
       return;
     }
 
+    // Prepare DTO for backend
+    const createProductDto = {
+      name: formData.name,
+      description: formData.description,
+      category: formData.category,
+      price: Number(formData.price),
+      quantity: Number(formData.stock),
+      image:
+        formData.images && formData.images.length > 0
+          ? formData.images[0]
+          : undefined,
+    };
+
     onSave({
       ...formData,
       id: listing?.id,
     });
+
+    createProduct(createProductDto as CreateProductDTO);
 
     toast.success(
       isEditing
@@ -119,7 +136,7 @@ export function MyListingDialog({
 
     // Reset form
     setFormData({
-      title: "",
+      name: "",
       description: "",
       category: "",
       price: "",
@@ -160,15 +177,15 @@ export function MyListingDialog({
             </Label>
             <Input
               id="title"
-              value={formData.title}
-              onChange={(e) => handleChange("title", e.target.value)}
+              value={formData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
               placeholder="e.g., Organic Tomatoes"
               className={`border-slate-200 ${
-                errors.title ? "border-red-500" : ""
+                errors.name ? "border-red-500" : ""
               }`}
             />
-            {errors.title && (
-              <p className="text-red-600 text-sm">{errors.title}</p>
+            {errors.name && (
+              <p className="text-red-600 text-sm">{errors.name}</p>
             )}
           </div>
 

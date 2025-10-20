@@ -107,7 +107,7 @@ export default function DashboardPage() {
   const [currentListings, setCurrentListings] = useState([
     {
       id: 1,
-      title: "Organic Tomatoes",
+      name: "Organic Tomatoes",
       category: "vegetables",
       description: "Fresh organic tomatoes from our greenhouse",
       status: "active",
@@ -121,7 +121,7 @@ export default function DashboardPage() {
     },
     {
       id: 2,
-      title: "Fresh Lettuce",
+      name: "Fresh Lettuce",
       category: "vegetables",
       description: "Crisp romaine lettuce, harvested daily",
       status: "active",
@@ -135,7 +135,7 @@ export default function DashboardPage() {
     },
     {
       id: 3,
-      title: "Sweet Corn",
+      name: "Sweet Corn",
       category: "vegetables",
       description: "Sweet, tender corn picked at peak ripeness",
       status: "low_stock",
@@ -149,7 +149,7 @@ export default function DashboardPage() {
     },
     {
       id: 4,
-      title: "Farm Eggs",
+      name: "Farm Eggs",
       category: "dairy",
       description: "Free-range eggs from our happy hens",
       status: "active",
@@ -163,7 +163,7 @@ export default function DashboardPage() {
     },
     {
       id: 5,
-      title: "Organic Honey",
+      name: "Organic Honey",
       category: "honey",
       description: "Raw, unfiltered honey from local bees",
       status: "active",
@@ -195,7 +195,7 @@ export default function DashboardPage() {
       // Create new listing
       const newListing = {
         id: Math.max(...currentListings.map((l) => l.id)) + 1,
-        title: listingData.title ?? "",
+        name: listingData.name ?? "",
         category: listingData.category ?? "",
         description: listingData.description ?? "",
         status: listingData.status ?? "active",
@@ -213,7 +213,7 @@ export default function DashboardPage() {
 
   type Listing = {
     id: number;
-    title: string;
+    name: string;
     category: string;
     description: string;
     status: string;
@@ -826,7 +826,7 @@ export default function DashboardPage() {
                           className="border-slate-200 hover:bg-slate-50"
                         >
                           <TableCell className="font-medium text-slate-900">
-                            {listing.title}
+                            {listing.name}
                           </TableCell>
                           <TableCell>
                             <Badge
@@ -922,7 +922,7 @@ export default function DashboardPage() {
               Delete Listing
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-600">
-              Are you sure you want to delete &quot;{listingToDelete?.title}
+              Are you sure you want to delete &quot;{listingToDelete?.name}
               &quot;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
