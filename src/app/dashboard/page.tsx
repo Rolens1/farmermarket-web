@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   Eye,
@@ -78,6 +78,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { signOut } from "../api/auth/login";
+import { deleteProduct, getUserProducts } from "../api/product/products";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -104,78 +105,21 @@ export default function DashboardPage() {
     setListingDialogOpen(true);
   };
 
-  const [currentListings, setCurrentListings] = useState([
-    {
-      id: 1,
-      title: "Organic Tomatoes",
-      category: "vegetables",
-      description: "Fresh organic tomatoes from our greenhouse",
-      status: "active",
-      price: "4.99",
-      unit: "lb",
-      stock: "50",
-      views: 245,
-      sales: 28,
-      revenue: "$139.72",
-      lastUpdated: "2 hours ago",
-    },
-    {
-      id: 2,
-      title: "Fresh Lettuce",
-      category: "vegetables",
-      description: "Crisp romaine lettuce, harvested daily",
-      status: "active",
-      price: "2.99",
-      unit: "lb",
-      stock: "30",
-      views: 189,
-      sales: 45,
-      revenue: "$134.55",
-      lastUpdated: "5 hours ago",
-    },
-    {
-      id: 3,
-      title: "Sweet Corn",
-      category: "vegetables",
-      description: "Sweet, tender corn picked at peak ripeness",
-      status: "low_stock",
-      price: "3.49",
-      unit: "lb",
-      stock: "8",
-      views: 98,
-      sales: 12,
-      revenue: "$41.88",
-      lastUpdated: "1 day ago",
-    },
-    {
-      id: 4,
-      title: "Farm Eggs",
-      category: "dairy",
-      description: "Free-range eggs from our happy hens",
-      status: "active",
-      price: "5.99",
-      unit: "dozen",
-      stock: "20",
-      views: 312,
-      sales: 67,
-      revenue: "$401.33",
-      lastUpdated: "3 hours ago",
-    },
-    {
-      id: 5,
-      title: "Organic Honey",
-      category: "honey",
-      description: "Raw, unfiltered honey from local bees",
-      status: "active",
-      price: "12.99",
-      unit: "jar",
-      stock: "15",
-      views: 156,
-      sales: 34,
-      revenue: "$441.66",
-      lastUpdated: "6 hours ago",
-    },
-  ]);
+  const [currentListings, setCurrentListings] = useState<Listing[]>([]);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const response = await getUserProducts();
+        console.log("User products fetched:", response);
+        setCurrentListings(response);
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      }
+    };
+
+    fetchListings();
+  }, []);
 
   const handleSaveListing = (listingData: Partial<Listing>) => {
     if (listingData.id) {
@@ -195,17 +139,17 @@ export default function DashboardPage() {
       // Create new listing
       const newListing = {
         id: Math.max(...currentListings.map((l) => l.id)) + 1,
-        title: listingData.title ?? "",
+        name: listingData.name ?? "",
         category: listingData.category ?? "",
         description: listingData.description ?? "",
         status: listingData.status ?? "active",
-        price: listingData.price ?? "",
+        price: listingData.price ?? 0,
         unit: listingData.unit ?? "",
-        stock: listingData.stock ?? "",
+        stock: listingData.stock ?? 0,
         views: 0,
         sales: 0,
         revenue: "$0.00",
-        lastUpdated: "Just now",
+        updated_at: listingData.updated_at ?? "",
       };
       setCurrentListings((prev) => [...prev, newListing]);
     }
@@ -213,17 +157,17 @@ export default function DashboardPage() {
 
   type Listing = {
     id: number;
-    title: string;
+    name: string;
     category: string;
     description: string;
     status: string;
-    price: string;
+    price: number;
     unit: string;
-    stock: string;
+    stock: number;
     views: number;
     sales: number;
     revenue: string;
-    lastUpdated: string;
+    updated_at: string;
   };
 
   const handleDeleteClick = (listing: Listing) => {
@@ -237,6 +181,7 @@ export default function DashboardPage() {
         prev.filter((item) => item.id !== listingToDelete.id)
       );
       toast.success("Listing deleted successfully");
+      deleteProduct(listingToDelete.id as unknown as string);
       setDeleteDialogOpen(false);
       setListingToDelete(null);
     }
@@ -370,7 +315,7 @@ export default function DashboardPage() {
               <List className="w-5 h-5" />
               <span className="font-medium text-sm">My Listings</span>
               <Badge className="ml-auto bg-slate-100 text-slate-700 border-0">
-                12
+                {currentListings.length}
               </Badge>
             </button>
 
@@ -826,7 +771,7 @@ export default function DashboardPage() {
                           className="border-slate-200 hover:bg-slate-50"
                         >
                           <TableCell className="font-medium text-slate-900">
-                            {listing.title}
+                            {listing.name}
                           </TableCell>
                           <TableCell>
                             <Badge
@@ -857,7 +802,7 @@ export default function DashboardPage() {
                             {listing.revenue}
                           </TableCell>
                           <TableCell className="text-slate-500 text-sm">
-                            {listing.lastUpdated}
+                            {listing.updated_at}
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -922,7 +867,7 @@ export default function DashboardPage() {
               Delete Listing
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-600">
-              Are you sure you want to delete &quot;{listingToDelete?.title}
+              Are you sure you want to delete &quot;{listingToDelete?.name}
               &quot;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

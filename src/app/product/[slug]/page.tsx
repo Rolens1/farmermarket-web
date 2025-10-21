@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ChevronRight, MapPin, MessageCircle, Star } from "lucide-react";
@@ -5,12 +6,77 @@ import { Button } from "@/components/ui/button";
 import { ImageWithFallback } from "@/components/helper/ImageWithFallback";
 import { ProductCard } from "@/components/ProductCard";
 import { useRouter } from "next/navigation";
+import { Metadata } from "next/dist/lib/metadata/types/metadata-interface";
+import { getProductBySlug, getProducts } from "@/app/api/product/products";
+import { useEffect, useState } from "react";
+import { Product } from "@/app/api/product/dto/create-product.dto";
 
-export default function ProductPage() {
+interface PageProps {
+  params: { slug: string };
+}
+
+async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const product = await getProductBySlug(params.slug);
+
+  if (!product) {
+    return {
+      title: "Product Not Found",
+    };
+  }
+
+  return {
+    title: `${product.name} | Farmers Market`,
+    description: product.description,
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      images: [product.image || "/default-product.jpg"],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: product.description,
+      images: [product.image || "/default-product.jpg"],
+    },
+    keywords: [
+      product.category,
+      "farmers market",
+      "local produce",
+      product.name,
+    ],
+  };
+}
+async function generateStaticParams() {
+  const products = await getProducts(); // Your API call to get all products
+
+  return products.map((product: any) => ({
+    slug: product.slug,
+  }));
+}
+
+export default function ProductPage({ params }: PageProps) {
+  const [product, setProduct] = useState<Product | null>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    async function fetchProduct() {
+      const product = await getProductBySlug(params.slug);
+
+      console.log("Fetched product:", product);
+      // Fetch product data here if needed
+      if (!product) {
+        router.push("/not-found");
+      }
+      setProduct(product);
+    }
+
+    fetchProduct();
+  }, []);
+
   const handleProductClick = (productId: string) => {
-    router.push(`/product/${productId}`);
+    console.log(params.slug);
+    // router.push(`/product/${productId}`);
   };
 
   const thumbnails = [
@@ -18,7 +84,6 @@ export default function ProductPage() {
     "https://images.unsplash.com/photo-1604337214275-86010944959d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcmdhbmljJTIwdmVnZXRhYmxlcyUyMGNvbG9yZnVsfGVufDF8fHx8MTc1OTgwODM0MXww&ixlib=rb-4.1.0&q=80&w=1080",
     "https://images.unsplash.com/photo-1603403887668-a23fbcd4d8be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZydWl0cyUyMGJhc2tldHxlbnwxfHx8fDE3NTk4MDgzNDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
   ];
-
   const relatedProducts = [
     {
       image:
@@ -68,6 +133,7 @@ export default function ProductPage() {
       date: "2 weeks ago",
     },
   ];
+
   return (
     <div className="min-h-screen">
       <div className="max-w-[1440px] mx-auto px-8 py-8">
@@ -87,7 +153,7 @@ export default function ProductPage() {
             Browse
           </button>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-muted-foreground">Product Name</span>
+          <span className="text-muted-foreground">{product?.name}</span>
         </div>
 
         {/* Main Content */}
@@ -96,8 +162,8 @@ export default function ProductPage() {
           <div className="col-span-2">
             <div className="rounded-3xl overflow-hidden mb-4 shadow-lg">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1757332334678-e76d258c49c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG9lcyUyMGZyZXNoJTIwb3JnYW5pY3xlbnwxfHx8fDE3NTk4MDgzNDR8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Organic Tomatoes"
+                src={product?.image || "/default-product.jpg"}
+                alt={product?.name || "Product Image"}
                 className="w-full h-[600px] object-cover"
               />
             </div>
@@ -119,7 +185,7 @@ export default function ProductPage() {
           {/* Right - Info */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-4xl text-foreground mb-2">Product Name</h1>
+              <h1 className="text-4xl text-foreground mb-2">{product?.name}</h1>
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -131,12 +197,14 @@ export default function ProductPage() {
                 </div>
                 <span className="text-muted-foreground">5 Reviews</span>
               </div>
-              <p className="text-3xl text-primary">$4.99/lb</p>
+              <p className="text-3xl text-primary">${product?.price}/lb</p>
             </div>
 
             <div className="bg-secondary/30 rounded-2xl p-4">
               <p className="text-muted-foreground">Available Quantity</p>
-              <p className="text-foreground">50 lbs in stock</p>
+              <p className="text-foreground">
+                {product?.quantity} lbs in stock
+              </p>
             </div>
 
             <div>
@@ -172,11 +240,7 @@ export default function ProductPage() {
         <div className="bg-card rounded-3xl p-8 shadow-sm border border-border mb-16">
           <h3 className="text-foreground mb-4">Product Description</h3>
           <p className="text-muted-foreground leading-relaxed">
-            Our organic tomatoes are grown with care using sustainable farming
-            practices. Hand-picked at peak ripeness, these tomatoes are bursting
-            with flavor and nutrition. Perfect for salads, sauces, or eating
-            fresh. We use no pesticides or harmful chemicals, ensuring you get
-            the healthiest, most delicious tomatoes possible.
+            {product?.description}
           </p>
         </div>
 
