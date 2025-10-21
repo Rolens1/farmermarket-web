@@ -35,7 +35,7 @@ export default function BrowsePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchProducts = async (params: any) => {
+  const fetchProducts = async (params: ProductSearchParamsInterface) => {
     // Remove undefined, empty, or default values
     const cleaned = Object.fromEntries(
       Object.entries(params).filter(
