@@ -15,45 +15,45 @@ type PageProps = {
   params: { slug: string };
 };
 
-async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug);
+// async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+//   const product = await getProductBySlug(params.slug);
 
-  if (!product) {
-    return {
-      title: "Product Not Found",
-    };
-  }
+//   if (!product) {
+//     return {
+//       title: "Product Not Found",
+//     };
+//   }
 
-  return {
-    title: `${product.name} | Farmers Market`,
-    description: product.description,
-    openGraph: {
-      title: product.name,
-      description: product.description,
-      images: [product.image || "/default-product.jpg"],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: product.name,
-      description: product.description,
-      images: [product.image || "/default-product.jpg"],
-    },
-    keywords: [
-      product.category,
-      "farmers market",
-      "local produce",
-      product.name,
-    ],
-  };
-}
-async function generateStaticParams() {
-  const products = await getProducts(); // Your API call to get all products
+//   return {
+//     title: `${product.name} | Farmers Market`,
+//     description: product.description,
+//     openGraph: {
+//       title: product.name,
+//       description: product.description,
+//       images: [product.image || "/default-product.jpg"],
+//       type: "website",
+//     },
+//     twitter: {
+//       card: "summary_large_image",
+//       title: product.name,
+//       description: product.description,
+//       images: [product.image || "/default-product.jpg"],
+//     },
+//     keywords: [
+//       product.category,
+//       "farmers market",
+//       "local produce",
+//       product.name,
+//     ],
+//   };
+// }
+// async function generateStaticParams() {
+//   const products = await getProducts(); // Your API call to get all products
 
-  return products.map((product: any) => ({
-    slug: product.slug,
-  }));
-}
+//   return products.map((product: any) => ({
+//     slug: product.slug,
+//   }));
+// }
 
 export default function ProductPage({ params }: PageProps) {
   const [product, setProduct] = useState<Product | null>(null);
