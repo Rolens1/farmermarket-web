@@ -11,9 +11,9 @@ import { getProductBySlug, getProducts } from "@/app/api/product/products";
 import { useEffect, useState } from "react";
 import { Product } from "@/app/api/product/dto/create-product.dto";
 
-interface PageProps {
+type PageProps = {
   params: { slug: string };
-}
+};
 
 async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);
