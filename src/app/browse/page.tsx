@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { ArrowUpDown, SlidersHorizontal } from "lucide-react";
 import { FilterSidebar } from "@/components/FilterSideBar";
@@ -14,26 +15,48 @@ import {
 import { Input } from "@/components/ui/input";
 import { ProductCard } from "@/components/ProductCard";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Product } from "../api/product/dto/create-product.dto";
 import { get } from "../api/fetch.api";
 import { searchProducts } from "../api/product/products";
 import { ProductSearchParamsInterface } from "../api/product/dto/product-search.dto";
 
 export default function BrowsePage() {
-  const [filters, setFilters] = useState({
+  const defaultFilters = {
     category: undefined,
     minPrice: 0,
     maxPrice: 100,
     distance: 10,
     pickupAvailable: false,
     deliveryAvailable: false,
-  });
+  };
+  const [filters, setFilters] = useState(defaultFilters);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+
+  // On mount, parse URL params and set filters/searchQuery
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const newFilters: any = { ...defaultFilters };
+    params.forEach((value, key) => {
+      if (key === "query") {
+        setSearchQuery(value);
+      } else if (key in defaultFilters) {
+        // Convert to correct type
+        if (key === "minPrice" || key === "maxPrice" || key === "distance") {
+          newFilters[key] = Number(value);
+        } else if (key === "pickupAvailable" || key === "deliveryAvailable") {
+          newFilters[key] = value === "true";
+        } else {
+          newFilters[key] = value;
+        }
+      }
+    });
+    setFilters(newFilters);
+  }, []);
 
   const fetchProducts = async (params: ProductSearchParamsInterface) => {
     // Remove undefined, empty, or default values
@@ -92,13 +115,25 @@ export default function BrowsePage() {
     router.push(`/browse${qs ? `?${qs}` : ""}`);
   }, [filters, searchQuery, router]);
 
+  // Debounce search/filter API calls
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     setLoading(true);
-    const params = {
-      ...filters,
-      query: searchQuery,
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      const params = {
+        ...filters,
+        query: searchQuery,
+      };
+      fetchProducts(params).finally(() => setLoading(false));
+    }, 400); // 400ms debounce
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
     };
-    fetchProducts(params).finally(() => setLoading(false));
   }, [filters, searchQuery]);
 
   return (
