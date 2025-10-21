@@ -11,10 +11,6 @@ import { getProductBySlug, getProducts } from "@/app/api/product/products";
 import { useEffect, useState } from "react";
 import { Product } from "@/app/api/product/dto/create-product.dto";
 
-type PageProps = {
-  params: { slug: string };
-};
-
 // async function generateMetadata({ params }: PageProps): Promise<Metadata> {
 //   const product = await getProductBySlug(params.slug);
 
@@ -55,7 +51,7 @@ type PageProps = {
 //   }));
 // }
 
-export default function ProductPage({ params }: PageProps) {
+export default function ProductPage({ params }: any) {
   const [product, setProduct] = useState<Product | null>(null);
   const router = useRouter();
 
