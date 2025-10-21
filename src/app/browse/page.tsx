@@ -14,59 +14,92 @@ import {
 import { Input } from "@/components/ui/input";
 import { ProductCard } from "@/components/ProductCard";
 import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { Product } from "../api/product/dto/create-product.dto";
+import { get } from "../api/fetch.api";
+import { searchProducts } from "../api/product/products";
+import { ProductSearchParamsInterface } from "../api/product/dto/product-search.dto";
 
 export default function BrowsePage() {
+  const [filters, setFilters] = useState({
+    category: undefined,
+    minPrice: 0,
+    maxPrice: 100,
+    distance: 10,
+    pickupAvailable: false,
+    deliveryAvailable: false,
+  });
   const router = useRouter();
-  const products = [
-    {
-      image:
-        "https://images.unsplash.com/photo-1757332334678-e76d258c49c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG9lcyUyMGZyZXNoJTIwb3JnYW5pY3xlbnwxfHx8fDE3NTk4MDgzNDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Organic Tomatoes",
-      price: "$4.99/lb",
-      seller: "Green Valley Farm",
-      distance: "2.3 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1604337214275-86010944959d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcmdhbmljJTIwdmVnZXRhYmxlcyUyMGNvbG9yZnVsfGVufDF8fHx8MTc1OTgwODM0MXww&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Mixed Vegetables",
-      price: "$6.50/lb",
-      seller: "Harvest Hills",
-      distance: "3.1 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1603403887668-a23fbcd4d8be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZydWl0cyUyMGJhc2tldHxlbnwxfHx8fDE3NTk4MDgzNDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Fresh Fruit Basket",
-      price: "$12.99",
-      seller: "Orchard Delight",
-      distance: "4.5 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1655169947079-5b2a38815147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob25leSUyMGphciUyMG5hdHVyYWx8ZW58MXx8fHwxNzU5NzYzMDI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Raw Wildflower Honey",
-      price: "$8.99/jar",
-      seller: "Bee Happy Farm",
-      distance: "5.2 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1663566869071-6c926e373515?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYWlyeSUyMHByb2R1Y3RzJTIwbWlsayUyMGNoZWVzZXxlbnwxfHx8fDE3NTk3OTg4NDh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Artisan Cheese",
-      price: "$9.99/lb",
-      seller: "Meadow Dairy",
-      distance: "1.8 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1759149936721-19b7684477fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aWxkZmxvd2VycyUyMGJvdXF1ZXQlMjBmcmVzaHxlbnwxfHx8fDE3NTk4MDgzNDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Wildflower Bouquet",
-      price: "$15.99",
-      seller: "Petal Perfect",
-      distance: "6.1 mi",
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const fetchProducts = async (params: any) => {
+    // Remove undefined, empty, or default values
+    const cleaned = Object.fromEntries(
+      Object.entries(params).filter(
+        ([k, v]) =>
+          v !== undefined &&
+          v !== "" &&
+          !(k === "minPrice" && v === 0) &&
+          !(k === "maxPrice" && v === 100) &&
+          !(k === "distance" && v === 10) &&
+          !(k === "pickupAvailable" && v === false) &&
+          !(k === "deliveryAvailable" && v === false)
+      )
+    );
+    const qs = new URLSearchParams(
+      Object.entries(cleaned).map(([k, v]) => [k, String(v)])
+    ).toString();
+    let productsData;
+    if (qs.length === 0) {
+      productsData = await get("/products");
+    } else {
+      productsData = await searchProducts(qs as ProductSearchParamsInterface);
+    }
+    // Always set products to an array
+    if (Array.isArray(productsData)) {
+      setProducts(productsData);
+    } else if (productsData && Array.isArray(productsData.products)) {
+      setProducts(productsData.products);
+    } else {
+      setProducts([]);
+    }
+  };
+
+  const handleConfirmSearch = useCallback(() => {
+    const params = {
+      ...filters,
+      query: searchQuery,
+    };
+    // Remove undefined or default values
+    const cleaned = Object.fromEntries(
+      Object.entries(params).filter(
+        ([k, v]) =>
+          v !== undefined &&
+          v !== "" &&
+          !(k === "minPrice" && v === 0) &&
+          !(k === "maxPrice" && v === 100) &&
+          !(k === "distance" && v === 10) &&
+          !(k === "pickupAvailable" && v === false) &&
+          !(k === "deliveryAvailable" && v === false)
+      )
+    );
+    const qs = new URLSearchParams(
+      cleaned as Record<string, string>
+    ).toString();
+    router.push(`/browse${qs ? `?${qs}` : ""}`);
+  }, [filters, searchQuery, router]);
+
+  useEffect(() => {
+    setLoading(true);
+    const params = {
+      ...filters,
+      query: searchQuery,
+    };
+    fetchProducts(params).finally(() => setLoading(false));
+  }, [filters, searchQuery]);
 
   return (
     <div className="min-h-screen">
@@ -76,6 +109,8 @@ export default function BrowsePage() {
           <div className="flex gap-4 items-center">
             <div className="flex-1">
               <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for products..."
                 className="rounded-full border-border"
               />
@@ -117,41 +152,74 @@ export default function BrowsePage() {
         <div className="flex gap-8">
           {/* Sidebar */}
           <aside className="w-80 flex-shrink-0">
-            <FilterSidebar />
+            <FilterSidebar
+              setProducts={setProducts}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              filters={filters}
+              setFilters={setFilters}
+              onConfirmSearch={handleConfirmSearch}
+            />
           </aside>
 
           {/* Product Grid */}
           <div className="flex-1">
             <div className="mb-6">
               <h3 className="text-foreground">
-                Showing {products.length} products
+                {loading
+                  ? "Loading products..."
+                  : `Showing ${products.length} products`}
               </h3>
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              {products.map((product, index) => (
-                <ProductCard
-                  key={index}
-                  product={product}
-                  onClick={() => router.push(`/product/${product.name}`)}
-                />
-              ))}
-            </div>
 
-            {/* Pagination */}
-            <div className="flex justify-center gap-2 mt-12">
-              {[1, 2, 3, 4, 5].map((page) => (
-                <button
-                  key={page}
-                  className={`w-10 h-10 rounded-full ${
-                    page === 1
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card border border-border text-foreground hover:bg-secondary"
-                  } transition-colors`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
+            {/* Loading Skeletons */}
+            {loading ? (
+              <div className="grid grid-cols-2 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-card rounded-3xl overflow-hidden shadow-sm border border-border animate-pulse"
+                  >
+                    <div className="aspect-[4/3] bg-muted" />
+                    <div className="p-5 space-y-3">
+                      <div className="h-6 bg-muted rounded w-2/3" />
+                      <div className="h-4 bg-muted rounded w-1/3" />
+                      <div className="h-4 bg-muted rounded w-1/2" />
+                      <div className="h-10 bg-muted rounded w-full mt-4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-6">
+                  {products &&
+                    products.map((product, index) => (
+                      <ProductCard
+                        key={index}
+                        product={product}
+                        onClick={() => router.push(`/product/${product.slug}`)}
+                      />
+                    ))}
+                </div>
+
+                {/* Pagination */}
+                <div className="flex justify-center gap-2 mt-12">
+                  {[1, 2, 3, 4, 5].map((page) => (
+                    <button
+                      key={page}
+                      className={`w-10 h-10 rounded-full ${
+                        page === 1
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card border border-border text-foreground hover:bg-secondary"
+                      } transition-colors`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

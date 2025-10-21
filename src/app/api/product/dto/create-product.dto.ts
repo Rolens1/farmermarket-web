@@ -15,6 +15,7 @@ export interface Product {
   category: string;
   quantity: number;
   image?: string;
+  slug?: string;
 }
 export interface ProductWithSeller extends Product {
   seller: {

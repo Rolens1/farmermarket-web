@@ -1,5 +1,6 @@
 import { get, securedGet, securedPost } from "../fetch.api";
 import { CreateProductDTO } from "./dto/create-product.dto";
+import { ProductSearchParamsInterface } from "./dto/product-search.dto";
 
 export const getProducts = async () => {
   const res = await get("/products");
@@ -40,11 +41,23 @@ export const deleteProduct = async (productId: string) => {
 };
 
 export const getProductById = async (productId: string) => {
-  const res = await get(`/products/${productId}`);
+  const res = await get(`/products/i/${productId}`);
   return res;
 };
 
 export const getProductBySlug = async (slug: string) => {
   const res = await get(`/products/slug/${slug}`);
+  return res;
+};
+
+export const searchProducts = async (params: ProductSearchParamsInterface) => {
+  // const searchParams = new URLSearchParams();
+  // Object.entries(params).forEach(([key, value]) => {
+  //   if (value !== undefined) {
+  //     searchParams.append(key, value.toString());
+  //   }
+  // });
+  const res = await get(`/products/s?${params}`);
+  console.log("Search products response:", res);
   return res;
 };

@@ -14,6 +14,9 @@ export function ImageWithFallback(
   };
 
   const { src, alt, style, className, width, height, ...rest } = props;
+  if (!src) {
+    return null;
+  }
 
   // Convert width and height to numbers if possible, otherwise undefined
   const parsedWidth =
