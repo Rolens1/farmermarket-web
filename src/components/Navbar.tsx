@@ -5,16 +5,16 @@ import { useRouter, usePathname } from "next/navigation";
 import { Leaf } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "./ui/button";
+import { useAuth } from "../context/AuthContext";
 
 export function Navbar({
   currentPage,
   setCurrentPage,
-  user = null,
 }: {
   currentPage: string;
   setCurrentPage: (page: string) => void;
-  user: { id: string; email: string } | null;
 }) {
+  const { user } = useAuth();
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Browse", path: "/browse" },
@@ -83,7 +83,9 @@ export function Navbar({
         {/* CTA Button */}
         {currentPage !== "dashboard" && (
           <Button>
-            <Link href="/dashboard">List Your Produce</Link>
+            <Link href={user ? "/dashboard" : "/login"}>
+              {user ? "List Your Produce" : "Login"}
+            </Link>
           </Button>
         )}
       </div>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Leaf, Apple, Beef, Droplet, Flower, Milk } from "lucide-react";
@@ -6,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { ImageWithFallback } from "@/components/helper/ImageWithFallback";
 import { CategoryCard } from "@/components/CategoryCard";
 import { ProductCard } from "@/components/ProductCard";
+import { useEffect, useState } from "react";
+import { get } from "./api/fetch.api";
 
 export default function Home() {
   const router = useRouter();
@@ -17,40 +20,22 @@ export default function Home() {
     { icon: Droplet, label: "Honey" },
     { icon: Flower, label: "Flowers" },
   ];
-  const recentProducts = [
-    {
-      image:
-        "https://images.unsplash.com/photo-1757332334678-e76d258c49c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG9lcyUyMGZyZXNoJTIwb3JnYW5pY3xlbnwxfHx8fDE3NTk4MDgzNDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Organic Tomatoes",
-      price: "$4.99/lb",
-      seller: "Green Valley Farm",
-      distance: "2.3 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1604337214275-86010944959d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcmdhbmljJTIwdmVnZXRhYmxlcyUyMGNvbG9yZnVsfGVufDF8fHx8MTc1OTgwODM0MXww&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Mixed Vegetables",
-      price: "$6.50/lb",
-      seller: "Harvest Hills",
-      distance: "3.1 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1603403887668-a23fbcd4d8be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZydWl0cyUyMGJhc2tldHxlbnwxfHx8fDE3NTk4MDgzNDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Fresh Fruit Basket",
-      price: "$12.99",
-      seller: "Orchard Delight",
-      distance: "4.5 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1655169947079-5b2a38815147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob25leSUyMGphciUyMG5hdHVyYWx8ZW58MXx8fHwxNzU5NzYzMDI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Raw Wildflower Honey",
-      price: "$8.99/jar",
-      seller: "Bee Happy Farm",
-      distance: "5.2 mi",
-    },
-  ];
+  const [recentProducts, setRecentProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      try {
+        // Use the search endpoint to guarantee most recent
+        const res = await get("/products/s?take=4&sort=created_at:desc");
+        // Accepts {products: array}
+        const products = (res && res.products ? res.products : []).slice(0, 4);
+        setRecentProducts(products);
+      } catch {
+        setRecentProducts([]);
+      }
+    };
+    fetchRecent();
+  }, []);
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -67,7 +52,13 @@ export default function Home() {
                 delivered to your door.
               </p>
             </div>
-            <SearchBar onSearch={() => router.push("/browse")} />
+            <SearchBar onSearch={query => {
+              if (query && query.trim()) {
+                router.push(`/browse?query=${encodeURIComponent(query.trim())}`);
+              } else {
+                router.push("/browse");
+              }
+            }} />
           </div>
           {/* Right Side */}
           <div className="rounded-3xl overflow-hidden shadow-2xl">
@@ -88,7 +79,13 @@ export default function Home() {
               key={category.label}
               icon={category.icon}
               label={category.label}
-              onClick={() => router.push("/browse")}
+              onClick={() =>
+                router.push(
+                  `/browse?category=${encodeURIComponent(
+                    category.label.toLowerCase()
+                  )}`
+                )
+              }
             />
           ))}
         </div>
@@ -109,9 +106,11 @@ export default function Home() {
           {/* Horizontal scrollable list after it should push to product ID or slug */}
           {recentProducts.map((product) => (
             <ProductCard
-              key={product.name}
+              key={product.id || product.name}
               product={product}
-              onClick={() => router.push(`/product/${product.name}`)}
+              onClick={() =>
+                router.push(`/product/${product.id || product.name}`)
+              }
             />
           ))}
         </div>

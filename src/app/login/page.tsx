@@ -7,9 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { signIn } from "../api/auth/login";
+import { useAuth } from "../../context/AuthContext";
+import { securedGet } from "../api/fetch.api";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const { setUser } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -21,11 +24,19 @@ export default function LoginPage() {
 
   const loginHandler = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Implement login logic here
     const email = formData.email;
     const password = formData.password;
     console.log("Email:", email, "Password:", password);
-    signIn(email, password);
+    await signIn(email, password);
+    // Fetch user info after login
+    try {
+      const response = await securedGet("/auth/me");
+      if (response && response.user) {
+        setUser(response.user);
+      }
+    } catch (e) {
+      // ignore
+    }
     router.push("/dashboard");
   };
 
