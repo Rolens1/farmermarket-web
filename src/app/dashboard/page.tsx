@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   Eye,
@@ -78,6 +78,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { signOut } from "../api/auth/login";
+import { getUserProducts } from "../api/product/products";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -104,78 +105,21 @@ export default function DashboardPage() {
     setListingDialogOpen(true);
   };
 
-  const [currentListings, setCurrentListings] = useState([
-    {
-      id: 1,
-      name: "Organic Tomatoes",
-      category: "vegetables",
-      description: "Fresh organic tomatoes from our greenhouse",
-      status: "active",
-      price: "4.99",
-      unit: "lb",
-      stock: "50",
-      views: 245,
-      sales: 28,
-      revenue: "$139.72",
-      lastUpdated: "2 hours ago",
-    },
-    {
-      id: 2,
-      name: "Fresh Lettuce",
-      category: "vegetables",
-      description: "Crisp romaine lettuce, harvested daily",
-      status: "active",
-      price: "2.99",
-      unit: "lb",
-      stock: "30",
-      views: 189,
-      sales: 45,
-      revenue: "$134.55",
-      lastUpdated: "5 hours ago",
-    },
-    {
-      id: 3,
-      name: "Sweet Corn",
-      category: "vegetables",
-      description: "Sweet, tender corn picked at peak ripeness",
-      status: "low_stock",
-      price: "3.49",
-      unit: "lb",
-      stock: "8",
-      views: 98,
-      sales: 12,
-      revenue: "$41.88",
-      lastUpdated: "1 day ago",
-    },
-    {
-      id: 4,
-      name: "Farm Eggs",
-      category: "dairy",
-      description: "Free-range eggs from our happy hens",
-      status: "active",
-      price: "5.99",
-      unit: "dozen",
-      stock: "20",
-      views: 312,
-      sales: 67,
-      revenue: "$401.33",
-      lastUpdated: "3 hours ago",
-    },
-    {
-      id: 5,
-      name: "Organic Honey",
-      category: "honey",
-      description: "Raw, unfiltered honey from local bees",
-      status: "active",
-      price: "12.99",
-      unit: "jar",
-      stock: "15",
-      views: 156,
-      sales: 34,
-      revenue: "$441.66",
-      lastUpdated: "6 hours ago",
-    },
-  ]);
+  const [currentListings, setCurrentListings] = useState<Listing[]>([]);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const response = await getUserProducts();
+        console.log("User products fetched:", response);
+        setCurrentListings(response);
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      }
+    };
+
+    fetchListings();
+  }, []);
 
   const handleSaveListing = (listingData: Partial<Listing>) => {
     if (listingData.id) {
@@ -205,7 +149,7 @@ export default function DashboardPage() {
         views: 0,
         sales: 0,
         revenue: "$0.00",
-        lastUpdated: "Just now",
+        updated_at: listingData.updated_at ?? "",
       };
       setCurrentListings((prev) => [...prev, newListing]);
     }
@@ -223,7 +167,7 @@ export default function DashboardPage() {
     views: number;
     sales: number;
     revenue: string;
-    lastUpdated: string;
+    updated_at: string;
   };
 
   const handleDeleteClick = (listing: Listing) => {
@@ -370,7 +314,7 @@ export default function DashboardPage() {
               <List className="w-5 h-5" />
               <span className="font-medium text-sm">My Listings</span>
               <Badge className="ml-auto bg-slate-100 text-slate-700 border-0">
-                12
+                {currentListings.length}
               </Badge>
             </button>
 
@@ -857,7 +801,7 @@ export default function DashboardPage() {
                             {listing.revenue}
                           </TableCell>
                           <TableCell className="text-slate-500 text-sm">
-                            {listing.lastUpdated}
+                            {listing.updated_at}
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>

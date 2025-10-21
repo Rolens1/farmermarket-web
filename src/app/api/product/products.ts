@@ -1,4 +1,4 @@
-import { get, securedPost } from "../fetch.api";
+import { get, securedGet, securedPost } from "../fetch.api";
 import { CreateProductDTO } from "./dto/create-product.dto";
 
 export const getProducts = async () => {
@@ -18,4 +18,15 @@ export const createProduct = async (productData: CreateProductDTO) => {
     throw new Error("Failed to create product");
   }
   console.log("Create product response:", res);
+};
+
+export const getUserProducts = async () => {
+  const res = await securedGet(`/products/user`);
+
+  return res;
+  // console.log("Get user products response:", res);
+  // if (!res.ok) {
+  //   throw new Error("Failed to fetch user products");
+  // }
+  // return res;
 };
