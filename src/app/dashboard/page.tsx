@@ -78,7 +78,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { signOut } from "../api/auth/login";
-import { getUserProducts } from "../api/product/products";
+import { deleteProduct, getUserProducts } from "../api/product/products";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -143,9 +143,9 @@ export default function DashboardPage() {
         category: listingData.category ?? "",
         description: listingData.description ?? "",
         status: listingData.status ?? "active",
-        price: listingData.price ?? "",
+        price: listingData.price ?? 0,
         unit: listingData.unit ?? "",
-        stock: listingData.stock ?? "",
+        stock: listingData.stock ?? 0,
         views: 0,
         sales: 0,
         revenue: "$0.00",
@@ -161,9 +161,9 @@ export default function DashboardPage() {
     category: string;
     description: string;
     status: string;
-    price: string;
+    price: number;
     unit: string;
-    stock: string;
+    stock: number;
     views: number;
     sales: number;
     revenue: string;
@@ -181,6 +181,7 @@ export default function DashboardPage() {
         prev.filter((item) => item.id !== listingToDelete.id)
       );
       toast.success("Listing deleted successfully");
+      deleteProduct(listingToDelete.id as unknown as string);
       setDeleteDialogOpen(false);
       setListingToDelete(null);
     }

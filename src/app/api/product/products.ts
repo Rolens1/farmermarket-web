@@ -2,8 +2,8 @@ import { get, securedGet, securedPost } from "../fetch.api";
 import { CreateProductDTO } from "./dto/create-product.dto";
 
 export const getProducts = async () => {
-  const res = await get("/api/products");
-
+  const res = await get("/products");
+  console.log("Get products response:", res);
   if (!res.ok) {
     throw new Error("Failed to fetch products");
   }
@@ -24,9 +24,27 @@ export const getUserProducts = async () => {
   const res = await securedGet(`/products/user`);
 
   return res;
-  // console.log("Get user products response:", res);
-  // if (!res.ok) {
-  //   throw new Error("Failed to fetch user products");
-  // }
-  // return res;
+};
+
+export const updateProduct = async (
+  productId: string,
+  productData: Partial<CreateProductDTO>
+) => {
+  const res = await securedPost(`/products/update/${productId}`, productData);
+  return res;
+};
+
+export const deleteProduct = async (productId: string) => {
+  const res = await securedPost(`/products/delete/${productId}`, {});
+  return res;
+};
+
+export const getProductById = async (productId: string) => {
+  const res = await get(`/products/${productId}`);
+  return res;
+};
+
+export const getProductBySlug = async (slug: string) => {
+  const res = await get(`/products/slug/${slug}`);
+  return res;
 };

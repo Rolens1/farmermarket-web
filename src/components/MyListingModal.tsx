@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ import {
 } from "./ui/select";
 import { Upload, X, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { createProduct } from "@/app/api/product/products";
+import { createProduct, updateProduct } from "@/app/api/product/products";
 import { CreateProductDTO } from "@/app/api/product/dto/create-product.dto";
 
 interface Listing {
@@ -28,9 +28,9 @@ interface Listing {
   name: string;
   description?: string;
   category: string;
-  price: string;
+  price: number;
   unit: string;
-  stock: string;
+  stock: number;
   status: string;
   images?: string[];
 }
@@ -40,6 +40,7 @@ interface MyListingDialogProps {
   onOpenChange: (open: boolean) => void;
   listing?: Listing | null;
   onSave: (listing: Listing) => void;
+  editing?: boolean;
 }
 
 export function MyListingDialog({
@@ -54,12 +55,38 @@ export function MyListingDialog({
     name: listing?.name || "",
     description: listing?.description || "",
     category: listing?.category || "",
-    price: listing?.price || "",
+    price: listing?.price || 0,
     unit: listing?.unit || "lb",
-    stock: listing?.stock || "",
+    stock: listing?.stock || 0,
     status: listing?.status || "active",
     images: listing?.images || [],
   });
+
+  useEffect(() => {
+    if (listing) {
+      setFormData({
+        name: listing.name || "",
+        description: listing.description || "",
+        category: listing.category || "",
+        price: listing.price || 0,
+        unit: listing.unit || "lb",
+        stock: listing.stock || 0,
+        status: listing.status || "active",
+        images: listing.images || [],
+      });
+    } else {
+      setFormData({
+        name: "",
+        description: "",
+        category: "",
+        price: 0,
+        unit: "lb",
+        stock: 0,
+        status: "active",
+        images: [],
+      });
+    }
+  }, [listing]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -82,13 +109,13 @@ export function MyListingDialog({
       newErrors.category = "Category is required";
     }
 
-    if (!formData.price.trim()) {
+    if (!formData.price) {
       newErrors.price = "Price is required";
     } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
       newErrors.price = "Please enter a valid price";
     }
 
-    if (!formData.stock.trim()) {
+    if (formData.stock < 0) {
       newErrors.stock = "Stock quantity is required";
     } else if (isNaN(Number(formData.stock)) || Number(formData.stock) < 0) {
       newErrors.stock = "Please enter a valid quantity";
@@ -123,8 +150,14 @@ export function MyListingDialog({
       ...formData,
       id: listing?.id,
     });
-
-    createProduct(createProductDto as CreateProductDTO);
+    if (isEditing) {
+      updateProduct(
+        listing.id as unknown as string,
+        createProductDto as CreateProductDTO
+      );
+    } else {
+      createProduct(createProductDto as CreateProductDTO);
+    }
 
     toast.success(
       isEditing
@@ -139,9 +172,9 @@ export function MyListingDialog({
       name: "",
       description: "",
       category: "",
-      price: "",
+      price: 0,
       unit: "lb",
-      stock: "",
+      stock: 0,
       status: "active",
       images: [],
     });
