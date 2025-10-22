@@ -154,9 +154,9 @@ export default function ProductPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-[1440px] mx-auto px-8 py-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12">
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-muted-foreground mb-8">
+        <div className="flex flex-wrap items-center gap-2 text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base">
           <button
             onClick={() => router.push("/")}
             className="hover:text-foreground"
@@ -171,36 +171,31 @@ export default function ProductPage({ params }: PageProps) {
             Browse
           </button>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-muted-foreground">{product?.name}</span>
+          <span className="truncate max-w-[120px] sm:max-w-xs text-muted-foreground">{product?.name}</span>
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-3 gap-12 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-10 lg:mb-16">
           {/* Left - Images */}
-          <div className="col-span-2">
-            <div className="rounded-3xl overflow-hidden mb-4 shadow-lg">
+          <div className="lg:col-span-2 mb-8 lg:mb-0">
+            <div className="rounded-2xl sm:rounded-3xl overflow-hidden mb-4 shadow-lg">
               <ImageWithFallback
                 src={mainImage}
                 alt={product?.name || "Product Image"}
-                className="w-full h-[600px] object-cover"
-                onError={(e) => {
-                  console.log("❌ Main image failed to load");
-                  e.currentTarget.src = "/default-product.jpg";
-                }}
-                onLoad={() => console.log("✅ Main image loaded successfully")}
+                className="w-full h-56 sm:h-80 md:h-[400px] lg:h-[600px] object-cover"
               />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
               {productThumbnails.map((thumb, index) => (
                 <div
                   key={index}
-                  className="rounded-2xl overflow-hidden cursor-pointer hover:opacity-75 transition-opacity"
+                  className="rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer hover:opacity-75 transition-opacity"
                   onClick={() => handleThumbnailClick(thumb)}
                 >
                   <ImageWithFallback
                     src={thumb}
                     alt={`${product.name} thumbnail ${index + 1}`}
-                    className="w-full h-32 object-cover"
+                    className="w-full h-20 sm:h-28 md:h-32 object-cover"
                   />
                 </div>
               ))}
@@ -208,10 +203,10 @@ export default function ProductPage({ params }: PageProps) {
           </div>
 
           {/* Right - Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <h1 className="text-4xl text-foreground mb-2">{product?.name}</h1>
-              <div className="flex items-center gap-2 mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl text-foreground mb-2">{product?.name}</h1>
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -220,24 +215,24 @@ export default function ProductPage({ params }: PageProps) {
                     />
                   ))}
                 </div>
-                <span className="text-muted-foreground">5 Reviews</span>
+                <span className="text-muted-foreground text-xs sm:text-sm">5 Reviews</span>
               </div>
-              <p className="text-3xl text-primary">${product?.price}/lb</p>
+              <p className="text-xl sm:text-2xl md:text-3xl text-primary">${product?.price}/lb</p>
             </div>
 
-            <div className="bg-secondary/30 rounded-2xl p-4">
-              <p className="text-muted-foreground">Available Quantity</p>
-              <p className="text-foreground">
+            <div className="bg-secondary/30 rounded-2xl p-3 sm:p-4">
+              <p className="text-muted-foreground text-xs sm:text-sm">Available Quantity</p>
+              <p className="text-foreground text-base sm:text-lg">
                 {product?.quantity} lbs in stock
               </p>
             </div>
 
             <div>
-              <h4 className="text-foreground mb-2">Farm</h4>
-              <p className="text-foreground">Green Valley Farm</p>
+              <h4 className="text-foreground mb-1 sm:mb-2 text-base sm:text-lg">Farm</h4>
+              <p className="text-foreground text-sm sm:text-base">Green Valley Farm</p>
               <div className="flex items-center gap-1 text-muted-foreground mt-1">
                 <MapPin className="w-4 h-4" />
-                <span className="text-muted-foreground">2.3 mi away</span>
+                <span className="text-muted-foreground text-xs sm:text-sm">2.3 mi away</span>
               </div>
             </div>
 
@@ -245,15 +240,15 @@ export default function ProductPage({ params }: PageProps) {
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1564085007988-8566e9f276cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtJTIwbGFuZHNjYXBlJTIwc3Vubnl8ZW58MXx8fHwxNzU5ODA4MzQ0fDA&ixlib=rb-4.1.0&q=80&w=1080"
                 alt="Farm location"
-                className="w-full h-48 object-cover"
+                className="w-full h-32 sm:h-48 object-cover"
               />
             </div>
 
-            <div className="space-y-3">
-              <Button className="w-full rounded-full bg-primary hover:bg-primary/90 py-6">
+            <div className="space-y-2 sm:space-y-3">
+              <Button className="w-full rounded-full bg-primary hover:bg-primary/90 py-4 sm:py-6 text-base sm:text-lg">
                 Reserve Now
               </Button>
-              <Button variant="outline" className="w-full rounded-full py-6">
+              <Button variant="outline" className="w-full rounded-full py-4 sm:py-6 text-base sm:text-lg">
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Message Seller
               </Button>
@@ -262,18 +257,18 @@ export default function ProductPage({ params }: PageProps) {
         </div>
 
         {/* Description */}
-        <div className="bg-card rounded-3xl p-8 shadow-sm border border-border mb-16">
-          <h3 className="text-foreground mb-4">Product Description</h3>
-          <p className="text-muted-foreground leading-relaxed">
+        <div className="bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm border border-border mb-10 lg:mb-16">
+          <h3 className="text-foreground mb-2 sm:mb-4 text-lg sm:text-xl">Product Description</h3>
+          <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
             {product?.description}
           </p>
         </div>
 
         {/* Reviews */}
         <div>
-          <div className="bg-card rounded-3xl p-8 shadow-sm border border-border mb-16">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-foreground">Customer Reviews</h3>
+          <div className="bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm border border-border mb-10 lg:mb-16">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-2">
+              <h3 className="text-foreground text-lg sm:text-xl">Customer Reviews</h3>
               <div className="flex items-center gap-2">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -283,23 +278,23 @@ export default function ProductPage({ params }: PageProps) {
                     />
                   ))}
                 </div>
-                <span className="text-foreground">
+                <span className="text-foreground text-xs sm:text-base">
                   4.9 out of 5 stars from {reviews.length} reviews
                 </span>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {reviews.map((review, index) => (
                 <div
                   key={index}
-                  className="border-b border-border pb-6 last:border-0"
+                  className="border-b border-border pb-4 sm:pb-6 last:border-0"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-foreground">{review.name}</h4>
-                    <span className="text-muted-foreground">{review.date}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 sm:mb-2 gap-1 sm:gap-0">
+                    <h4 className="text-foreground text-sm sm:text-base">{review.name}</h4>
+                    <span className="text-muted-foreground text-xs sm:text-sm">{review.date}</span>
                   </div>
-                  <div className="flex items-center mb-2">
+                  <div className="flex items-center mb-1 sm:mb-2">
                     {[...Array(review.rating)].map((_, i) => (
                       <Star
                         key={i}
@@ -307,7 +302,7 @@ export default function ProductPage({ params }: PageProps) {
                       />
                     ))}
                   </div>
-                  <p className="text-muted-foreground">{review.comment}</p>
+                  <p className="text-muted-foreground text-xs sm:text-base">{review.comment}</p>
                 </div>
               ))}
             </div>
@@ -315,8 +310,8 @@ export default function ProductPage({ params }: PageProps) {
 
           {/* Related Products */}
           <div>
-            <h2 className="text-foreground mb-8">Related Products</h2>
-            <div className="grid grid-cols-3 gap-6">
+            <h2 className="text-foreground mb-4 sm:mb-8 text-lg sm:text-xl">Related Products</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {relatedProducts.map((product, index) => (
                 <ProductCard key={index} product={product as any} />
               ))}

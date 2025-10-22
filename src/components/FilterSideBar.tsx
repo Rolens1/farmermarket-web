@@ -96,7 +96,7 @@ export function FilterSidebar({
   ];
 
   return (
-    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border sticky top-24">
+    <div className="bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-border sticky top-20 sm:top-24 w-full max-w-xs sm:max-w-sm mx-auto sm:mx-0 mb-4 sm:mb-0">
       {/* Search Bar (synced with main search) */}
       <div className="mb-6">
         <input

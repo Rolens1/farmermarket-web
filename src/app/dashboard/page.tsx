@@ -282,16 +282,20 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="flex">
+      <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-slate-200 min-h-screen sticky top-0">
-          <div className="p-6 border-b border-slate-200">
-            {/** Name and Description */}
-            <h2 className="text-slate-900 font-semibold">Green Valley Farm</h2>
-            <p className="text-slate-500 text-sm mt-1">Farmer Dashboard</p>
+        <aside className="w-full lg:w-64 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 min-h-0 lg:min-h-screen sticky top-0 z-20">
+          <div className="p-4 sm:p-6 border-b border-slate-200">
+            {/* Name and Description */}
+            <h2 className="text-slate-900 font-semibold text-lg sm:text-xl">
+              Green Valley Farm
+            </h2>
+            <p className="text-slate-500 text-xs sm:text-sm mt-1">
+              Farmer Dashboard
+            </p>
           </div>
 
-          <nav className="p-4">
+          <nav className="p-2 sm:p-4 flex flex-row lg:flex-col overflow-x-auto gap-2 lg:gap-0">
             {/** Dashboard */}
             <button
               onClick={() => {
@@ -385,20 +389,20 @@ export default function DashboardPage() {
         {/* Main Content */}
         <div className="flex-1">
           {/* Header */}
-          <header className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
-            <div className="flex justify-between items-center">
+          <header className="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-6 sticky top-0 z-10">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
               <div>
-                <h1 className="text-slate-900 font-semibold text-2xl">
+                <h1 className="text-slate-900 font-semibold text-xl sm:text-2xl">
                   Dashboard
                 </h1>
-                <p className="text-slate-600 text-sm mt-1">
+                <p className="text-slate-600 text-xs sm:text-sm mt-1">
                   Monitor your farm&rsquo;s performance and manage your listings
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <Button
                   variant="outline"
-                  className="border-slate-200 text-slate-700 hover:bg-slate-50"
+                  className="border-slate-200 text-slate-700 hover:bg-slate-50 text-xs sm:text-base"
                   disabled
                 >
                   <Download className="w-4 h-4 mr-2" />
@@ -406,7 +410,7 @@ export default function DashboardPage() {
                 </Button>
                 <Button
                   onClick={handleNewListing}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-base"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   New Listing
@@ -415,7 +419,7 @@ export default function DashboardPage() {
             </div>
           </header>
 
-          <div className="p-8">
+          <div className="p-2 sm:p-4 md:p-8">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="bg-slate-100 border border-slate-200">
                 <TabsTrigger
@@ -727,27 +731,27 @@ export default function DashboardPage() {
                 <TabsContent value="listings" className="mt-6">
                   <div className="bg-white rounded-xl border border-slate-200">
                     {/* Table Header */}
-                    <div className="p-6 border-b border-slate-200">
-                      <div className="flex justify-between items-center">
+                    <div className="p-4 sm:p-6 border-b border-slate-200">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between items-start sm:items-center">
                         <div>
-                          <h3 className="text-slate-900 font-semibold">
+                          <h3 className="text-slate-900 font-semibold text-base sm:text-lg">
                             Product Listings
                           </h3>
-                          <p className="text-slate-500 text-sm mt-1">
+                          <p className="text-slate-500 text-xs sm:text-sm mt-1">
                             Manage all your products and inventory
                           </p>
                         </div>
-                        <div className="flex gap-3">
-                          <div className="relative">
+                        <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+                          <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <Input
                               placeholder="Search products..."
-                              className="pl-10 w-64 border-slate-200"
+                              className="pl-10 w-full sm:w-64 border-slate-200"
                             />
                           </div>
                           <Button
                             variant="outline"
-                            className="border-slate-200"
+                            className="border-slate-200 text-xs sm:text-base"
                           >
                             <Filter className="w-4 h-4 mr-2" />
                             Filter
@@ -756,125 +760,224 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Table */}
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-slate-200 hover:bg-slate-50">
-                          <TableHead className="text-slate-600">
-                            Product
-                          </TableHead>
-                          <TableHead className="text-slate-600">
-                            Status
-                          </TableHead>
-                          <TableHead className="text-slate-600">
-                            Price
-                          </TableHead>
-                          <TableHead className="text-slate-600">
-                            Stock
-                          </TableHead>
-                          <TableHead className="text-slate-600">
-                            Views
-                          </TableHead>
-                          <TableHead className="text-slate-600">
-                            Sales
-                          </TableHead>
-                          <TableHead className="text-slate-600">
-                            Revenue
-                          </TableHead>
-                          <TableHead className="text-slate-600">
-                            Last Updated
-                          </TableHead>
-                          <TableHead className="text-right text-slate-600">
-                            Actions
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {currentListings.map((listing) => (
-                          <TableRow
-                            key={listing.id}
-                            className="border-slate-200 hover:bg-slate-50"
-                          >
-                            <TableCell className="font-medium text-slate-900">
-                              {listing.name}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={
-                                  listing.status === "active"
-                                    ? "bg-green-100 text-green-700 border-0 hover:bg-green-100"
-                                    : "bg-amber-100 text-amber-700 border-0 hover:bg-amber-100"
-                                }
-                              >
-                                {listing.status === "active"
-                                  ? "Active"
-                                  : "Low Stock"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-slate-700">
-                              {listing.price}
-                            </TableCell>
-                            <TableCell className="text-slate-700">
-                              {listing.stock}
-                            </TableCell>
-                            <TableCell className="text-slate-700">
-                              {listing.views}
-                            </TableCell>
-                            <TableCell className="text-slate-700">
-                              {listing.sales}
-                            </TableCell>
-                            <TableCell className="text-slate-900 font-medium">
-                              {listing.revenue}
-                            </TableCell>
-                            <TableCell className="text-slate-500 text-sm">
-                              {listing.updated_at}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                  >
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleEditListing(listing as Listing)
-                                    }
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      if (listing.slug) {
-                                        router.push(`/product/${listing.slug}`);
-                                      }
-                                    }}
-                                  >
-                                    <Eye className="w-4 h-4 mr-2" />
-                                    View Details
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleDeleteClick(listing as Listing)
-                                    }
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
+                    {/* Responsive Table Wrapper */}
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[700px]">
+                        <TableHeader>
+                          <TableRow className="border-slate-200 hover:bg-slate-50">
+                            <TableHead className="text-slate-600">
+                              Product
+                            </TableHead>
+                            <TableHead className="text-slate-600">
+                              Status
+                            </TableHead>
+                            <TableHead className="text-slate-600">
+                              Price
+                            </TableHead>
+                            <TableHead className="text-slate-600">
+                              Stock
+                            </TableHead>
+                            <TableHead className="text-slate-600">
+                              Views
+                            </TableHead>
+                            <TableHead className="text-slate-600">
+                              Sales
+                            </TableHead>
+                            <TableHead className="text-slate-600">
+                              Revenue
+                            </TableHead>
+                            <TableHead className="text-slate-600">
+                              Last Updated
+                            </TableHead>
+                            <TableHead className="text-right text-slate-600">
+                              Actions
+                            </TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {currentListings.map((listing) => (
+                            <TableRow
+                              key={listing.id}
+                              className="border-slate-200 hover:bg-slate-50 text-xs sm:text-sm"
+                            >
+                              <TableCell className="font-medium text-slate-900 whitespace-nowrap">
+                                {listing.name}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  className={
+                                    listing.status === "active"
+                                      ? "bg-green-100 text-green-700 border-0 hover:bg-green-100"
+                                      : "bg-amber-100 text-amber-700 border-0 hover:bg-amber-100"
+                                  }
+                                >
+                                  {listing.status === "active"
+                                    ? "Active"
+                                    : "Low Stock"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-slate-700 whitespace-nowrap">
+                                {listing.price}
+                              </TableCell>
+                              <TableCell className="text-slate-700 whitespace-nowrap">
+                                {listing.stock}
+                              </TableCell>
+                              <TableCell className="text-slate-700 whitespace-nowrap">
+                                {listing.views}
+                              </TableCell>
+                              <TableCell className="text-slate-700 whitespace-nowrap">
+                                {listing.sales}
+                              </TableCell>
+                              <TableCell className="text-slate-900 font-medium whitespace-nowrap">
+                                {listing.revenue}
+                              </TableCell>
+                              <TableCell className="text-slate-500 text-xs sm:text-sm whitespace-nowrap">
+                                {listing.updated_at}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                    >
+                                      <MoreHorizontal className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleEditListing(listing as Listing)
+                                      }
+                                    >
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        if (listing.slug) {
+                                          router.push(
+                                            `/product/${listing.slug}`
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      <Eye className="w-4 h-4 mr-2" />
+                                      View Details
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleDeleteClick(listing as Listing)
+                                      }
+                                      className="text-red-600"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="sm:hidden p-2 space-y-4">
+                      {currentListings.map((listing) => (
+                        <div
+                          key={listing.id}
+                          className="border rounded-lg p-4 flex flex-col gap-2 bg-slate-50"
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-slate-900">
+                              {listing.name}
+                            </span>
+                            <Badge
+                              className={
+                                listing.status === "active"
+                                  ? "bg-green-100 text-green-700 border-0 hover:bg-green-100"
+                                  : "bg-amber-100 text-amber-700 border-0 hover:bg-amber-100"
+                              }
+                            >
+                              {listing.status === "active"
+                                ? "Active"
+                                : "Low Stock"}
+                            </Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-700">
+                            <span>
+                              Price:{" "}
+                              <span className="font-medium">
+                                {listing.price}
+                              </span>
+                            </span>
+                            <span>
+                              Stock:{" "}
+                              <span className="font-medium">
+                                {listing.stock}
+                              </span>
+                            </span>
+                            <span>
+                              Views:{" "}
+                              <span className="font-medium">
+                                {listing.views}
+                              </span>
+                            </span>
+                            <span>
+                              Sales:{" "}
+                              <span className="font-medium">
+                                {listing.sales}
+                              </span>
+                            </span>
+                            <span>
+                              Revenue:{" "}
+                              <span className="font-medium">
+                                {listing.revenue}
+                              </span>
+                            </span>
+                          </div>
+                          <div className="text-slate-500 text-xs">
+                            Last Updated: {listing.updated_at}
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs px-2 py-1"
+                              onClick={() =>
+                                handleEditListing(listing as Listing)
+                              }
+                            >
+                              <Edit className="w-4 h-4 mr-1" /> Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs px-2 py-1"
+                              onClick={() =>
+                                listing.slug &&
+                                router.push(`/product/${listing.slug}`)
+                              }
+                            >
+                              <Eye className="w-4 h-4 mr-1" /> View
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="text-xs px-2 py-1"
+                              onClick={() =>
+                                handleDeleteClick(listing as Listing)
+                              }
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" /> Delete
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </TabsContent>
               )}

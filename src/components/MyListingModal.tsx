@@ -231,22 +231,28 @@ export function MyListingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+      <DialogContent className="w-full max-w-lg sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white p-2 sm:p-6 rounded-lg">
         <DialogHeader>
-          <DialogTitle className="text-slate-900">
+          <DialogTitle className="text-slate-900 text-lg sm:text-2xl">
             {isEditing ? "Edit Listing" : "Create New Listing"}
           </DialogTitle>
-          <DialogDescription className="text-slate-600">
+          <DialogDescription className="text-slate-600 text-xs sm:text-base">
             {isEditing
               ? "Update your product details below"
               : "Add a new product to your farm inventory"}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 sm:space-y-6 py-2 sm:py-4"
+        >
           {/* Product Name */}
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-slate-700">
+          <div className="space-y-1 sm:space-y-2">
+            <Label
+              htmlFor="title"
+              className="text-slate-700 text-xs sm:text-base"
+            >
               Product Name *
             </Label>
             <Input
@@ -256,16 +262,19 @@ export function MyListingDialog({
               placeholder="e.g., Organic Tomatoes"
               className={`border-slate-200 ${
                 errors.name ? "border-red-500" : ""
-              }`}
+              } text-xs sm:text-base`}
             />
             {errors.name && (
-              <p className="text-red-600 text-sm">{errors.name}</p>
+              <p className="text-red-600 text-xs sm:text-sm">{errors.name}</p>
             )}
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-slate-700">
+          <div className="space-y-1 sm:space-y-2">
+            <Label
+              htmlFor="description"
+              className="text-slate-700 text-xs sm:text-base"
+            >
               Description
             </Label>
             <Textarea
@@ -274,13 +283,16 @@ export function MyListingDialog({
               onChange={(e) => handleChange("description", e.target.value)}
               placeholder="Describe your product, growing methods, harvest date, etc."
               rows={4}
-              className="border-slate-200 resize-none"
+              className="border-slate-200 resize-none text-xs sm:text-base"
             />
           </div>
 
           {/* Category */}
-          <div className="space-y-2">
-            <Label htmlFor="category" className="text-slate-700">
+          <div className="space-y-1 sm:space-y-2">
+            <Label
+              htmlFor="category"
+              className="text-slate-700 text-xs sm:text-base"
+            >
               Category *
             </Label>
             <Select
@@ -290,7 +302,7 @@ export function MyListingDialog({
               <SelectTrigger
                 className={`border-slate-200 ${
                   errors.category ? "border-red-500" : ""
-                }`}
+                } text-xs sm:text-base`}
               >
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -306,18 +318,23 @@ export function MyListingDialog({
               </SelectContent>
             </Select>
             {errors.category && (
-              <p className="text-red-600 text-sm">{errors.category}</p>
+              <p className="text-red-600 text-xs sm:text-sm">
+                {errors.category}
+              </p>
             )}
           </div>
 
           {/* Price and Unit */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="price" className="text-slate-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+            <div className="space-y-1 sm:space-y-2">
+              <Label
+                htmlFor="price"
+                className="text-slate-700 text-xs sm:text-base"
+              >
                 Price *
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs sm:text-base">
                   $
                 </span>
                 <Input
@@ -329,23 +346,28 @@ export function MyListingDialog({
                   placeholder="0.00"
                   className={`pl-7 border-slate-200 ${
                     errors.price ? "border-red-500" : ""
-                  }`}
+                  } text-xs sm:text-base`}
                 />
               </div>
               {errors.price && (
-                <p className="text-red-600 text-sm">{errors.price}</p>
+                <p className="text-red-600 text-xs sm:text-sm">
+                  {errors.price}
+                </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="unit" className="text-slate-700">
+            <div className="space-y-1 sm:space-y-2">
+              <Label
+                htmlFor="unit"
+                className="text-slate-700 text-xs sm:text-base"
+              >
                 Unit
               </Label>
               <Select
                 value={formData.unit}
                 onValueChange={(value) => handleChange("unit", value)}
               >
-                <SelectTrigger className="border-slate-200">
+                <SelectTrigger className="border-slate-200 text-xs sm:text-base">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -363,8 +385,11 @@ export function MyListingDialog({
           </div>
 
           {/* Stock */}
-          <div className="space-y-2">
-            <Label htmlFor="stock" className="text-slate-700">
+          <div className="space-y-1 sm:space-y-2">
+            <Label
+              htmlFor="stock"
+              className="text-slate-700 text-xs sm:text-base"
+            >
               Available Stock *
             </Label>
             <Input
@@ -376,26 +401,29 @@ export function MyListingDialog({
               placeholder="e.g., 50"
               className={`border-slate-200 ${
                 errors.stock ? "border-red-500" : ""
-              }`}
+              } text-xs sm:text-base`}
             />
             {errors.stock && (
-              <p className="text-red-600 text-sm">{errors.stock}</p>
+              <p className="text-red-600 text-xs sm:text-sm">{errors.stock}</p>
             )}
-            <p className="text-slate-500 text-sm">
+            <p className="text-slate-500 text-xs sm:text-sm">
               Enter quantity in the unit selected above
             </p>
           </div>
 
           {/* Status */}
-          <div className="space-y-2">
-            <Label htmlFor="status" className="text-slate-700">
+          <div className="space-y-1 sm:space-y-2">
+            <Label
+              htmlFor="status"
+              className="text-slate-700 text-xs sm:text-base"
+            >
               Status
             </Label>
             <Select
               value={formData.status}
               onValueChange={(value) => handleChange("status", value)}
             >
-              <SelectTrigger className="border-slate-200">
+              <SelectTrigger className="border-slate-200 text-xs sm:text-base">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -407,8 +435,10 @@ export function MyListingDialog({
           </div>
 
           {/* Image Upload */}
-          <div className="space-y-2">
-            <Label className="text-slate-700">Product Image</Label>
+          <div className="space-y-1 sm:space-y-2">
+            <Label className="text-slate-700 text-xs sm:text-base">
+              Product Image
+            </Label>
             {user ? (
               <ImageUpload
                 onImageChange={handleImageChange}
@@ -416,9 +446,9 @@ export function MyListingDialog({
                 userId={user.id}
               />
             ) : (
-              <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center">
-                <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                <p className="text-slate-600 mb-1">
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 sm:p-8 text-center">
+                <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 mx-auto mb-2 sm:mb-3" />
+                <p className="text-slate-600 mb-1 text-xs sm:text-base">
                   Please log in to upload images
                 </p>
               </div>
@@ -430,19 +460,19 @@ export function MyListingDialog({
             )}
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 flex-col sm:flex-row">
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
-              className="border-slate-200 text-slate-700 hover:bg-slate-50"
+              className="border-slate-200 text-slate-700 hover:bg-slate-50 w-full sm:w-auto text-xs sm:text-base"
               disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto text-xs sm:text-base"
               disabled={isSubmitting}
             >
               {isSubmitting

@@ -22,7 +22,7 @@ export function ProductCard({
   const mainImage = images[0] || "/placeholder.png";
   const secondaryImages = images.slice(1);
   return (
-    <div className="bg-card rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border group cursor-pointer">
+    <div className="bg-card rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border group cursor-pointer flex flex-col h-full">
       <div className="aspect-[4/3] overflow-hidden" onClick={onClick}>
         <ImageWithFallback
           src={images?.[0] || "/placeholder.png"}
@@ -42,19 +42,23 @@ export function ProductCard({
           ))}
         </div>
       )}
-      <div className="p-5">
+      <div className="p-3 sm:p-5 flex flex-col flex-1">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-foreground">{product.name}</h3>
-          <span className="text-primary">{product.price}</span>
+          <h3 className="text-foreground text-base sm:text-lg font-semibold line-clamp-2">
+            {product.name}
+          </h3>
+          <span className="text-primary text-sm sm:text-base">
+            {product.price}
+          </span>
         </div>
         <div className="flex items-center gap-1 text-muted-foreground mb-4">
           {/* Optionally show seller and distance if available */}
         </div>
-        <Button className="w-full rounded-full bg-primary hover:bg-primary/90">
+        <Button className="w-full rounded-full bg-primary hover:bg-primary/90 text-xs sm:text-base py-2 sm:py-3">
           Reserve
         </Button>
         <Button
-          className="w-full rounded-full bg-primary hover:bg-primary/90 mt-2"
+          className="w-full rounded-full bg-primary hover:bg-primary/90 mt-2 text-xs sm:text-base py-2 sm:py-3"
           onClick={(e) => {
             e.stopPropagation();
             if (onAddToCart) onAddToCart(product);

@@ -27,9 +27,7 @@ export default function Home() {
   useEffect(() => {
     const fetchRecent = async () => {
       try {
-        // Use the search endpoint to guarantee most recent
         const res = await get("/products/s?take=4&sort=created_at:desc");
-        // Accepts {products: array}
         const products = (res && res.products ? res.products : []).slice(0, 4);
         setRecentProducts(products);
       } catch {
@@ -38,18 +36,19 @@ export default function Home() {
     };
     fetchRecent();
   }, []);
+
   return (
-    <div className="min-h-screen">
+    <main>
       {/* Hero Section */}
-      <section className="max-w-[1440px] mx-auto px-8 py-16">
-        <div className="grid grid-cols-2 gap-16 items-center">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
           {/* Left Side - Text and Search */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-5xl text-foreground leading-tight">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="space-y-3 sm:space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl text-foreground leading-tight">
                 Buy fresh produce directly from local farmers.
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
                 Connect with nearby farmers and get the freshest produce
                 delivered to your door.
               </p>
@@ -66,20 +65,23 @@ export default function Home() {
               }}
             />
           </div>
-          {/* Right Side */}
-          <div className="rounded-3xl overflow-hidden shadow-2xl">
+          {/* Right Side - Hero Image */}
+          <div className="rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg sm:shadow-2xl mt-8 md:mt-0">
             <ImageWithFallback
               src="https://images.unsplash.com/photo-1747503331142-27f458a1498c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtZXJzJTIwbWFya2V0JTIwZnJlc2glMjBwcm9kdWNlfGVufDF8fHx8MTc1OTczMjEyM3ww&ixlib=rb-4.1.0&q=80&w=1080"
               alt="Fresh farmers market produce"
-              className="w-full h-[500px] object-cover"
+              className="w-full h-48 sm:h-72 md:h-[500px] object-cover"
             />
           </div>
         </div>
       </section>
-      {/* Categories Section */}
-      <section className="max-w-[1440px] mx-auto px-8 py-16">
-        <h2 className="text-foreground mb-8">Top Categories</h2>
-        <div className="grid grid-cols-6 gap-6">
+
+      {/* Responsive Categories Section */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16">
+        <h2 className="text-foreground mb-6 sm:mb-8 text-xl sm:text-2xl">
+          Top Categories
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 sm:gap-6">
           {categories.map((category) => (
             <CategoryCard
               key={category.label}
@@ -97,19 +99,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Recent Products Section */}
-      <section className="max-w-[1440px] mx-auto px-8 py-16">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-foreground">Recently Added</h2>
+      {/* Responsive Recent Products Section */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8">
+          <h2 className="text-foreground text-xl sm:text-2xl mb-4 sm:mb-0">
+            Recently Added
+          </h2>
           <button
             onClick={() => router.push("/browse")}
-            className="text-primary hover:text-primary/80 transition-colors"
+            className="text-primary hover:text-primary/80 transition-colors text-base sm:text-lg"
           >
             View All →
           </button>
         </div>
-        <div className="grid grid-cols-4 gap-6">
-          {/* Horizontal scrollable list after it should push to product ID or slug */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {recentProducts.map((product) => (
             <ProductCard
               key={product.slug || product.id || product.name}
@@ -125,6 +128,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-    </div>
+    </main>
   );
 }
