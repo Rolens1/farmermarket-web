@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -18,15 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { createProduct, updateProduct } from "@/app/api/product/products";
 import { CreateProductDTO } from "@/app/api/product/dto/create-product.dto";
+import { ImageUpload } from "./ImageUpload"; // Import the ImageUpload component
+import { useAuth } from "@/context/AuthContext"; // Import auth context
 
 interface Listing {
   id?: number;
   name: string;
-  description?: string;
+  description: string;
   category: string;
   price: number;
   unit: string;
@@ -50,6 +53,7 @@ export function MyListingDialog({
   onSave,
 }: MyListingDialogProps) {
   const isEditing = !!listing;
+  const { user } = useAuth(); // Get user for image upload
 
   const [formData, setFormData] = useState<Listing>({
     name: listing?.name || "",
@@ -61,6 +65,11 @@ export function MyListingDialog({
     status: listing?.status || "active",
     images: listing?.images || [],
   });
+
+  const [imageUrl, setImageUrl] = useState<string[] | null>(
+    listing?.images || null
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (listing) {
@@ -74,6 +83,7 @@ export function MyListingDialog({
         status: listing.status || "active",
         images: listing.images || [],
       });
+      setImageUrl(listing.images || null);
     } else {
       setFormData({
         name: "",
@@ -85,6 +95,7 @@ export function MyListingDialog({
         status: "active",
         images: [],
       });
+      setImageUrl(null);
     }
   }, [listing]);
 
@@ -96,6 +107,17 @@ export function MyListingDialog({
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  const handleImageChange = (url: string | null) => {
+    // console.log removed
+    setImageUrl([url] as string[] | null);
+
+    // Update formData images array
+    setFormData((prev) => ({
+      ...prev,
+      images: url ? [url] : [],
+    }));
   };
 
   const validateForm = (): boolean => {
@@ -125,60 +147,79 @@ export function MyListingDialog({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
+      setIsSubmitting(false);
       return;
     }
 
-    // Prepare DTO for backend
-    const createProductDto = {
-      name: formData.name,
-      description: formData.description,
-      category: formData.category,
-      price: Number(formData.price),
-      quantity: Number(formData.stock),
-      image:
-        formData.images && formData.images.length > 0
-          ? formData.images[0]
-          : undefined,
-    };
+    try {
+      // console.log removed
 
-    onSave({
-      ...formData,
-      id: listing?.id,
-    });
-    if (isEditing) {
-      updateProduct(
-        listing.id as unknown as string,
-        createProductDto as CreateProductDTO
+      // Prepare DTO for backend
+      const createProductDto: CreateProductDTO = {
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        price: Number(formData.price),
+        quantity: Number(formData.stock),
+        image: imageUrl || undefined, // Use the imageUrl state directly
+      };
+
+      // console.log removed
+
+      let result;
+      if (isEditing) {
+        result = await updateProduct(
+          listing.id as unknown as string,
+          createProductDto
+        );
+      } else {
+        result = await createProduct(createProductDto);
+      }
+
+      // console.log removed
+
+      // Update local state with the saved listing
+      const savedListing: Listing = {
+        ...formData,
+        id: listing?.id || Date.now(), // Use actual ID from backend if available
+        images: imageUrl ? imageUrl : [],
+      };
+
+      onSave(savedListing);
+
+      toast.success(
+        isEditing
+          ? "Listing updated successfully!"
+          : "Listing created successfully!"
       );
-    } else {
-      createProduct(createProductDto as CreateProductDTO);
+
+      onOpenChange(false);
+
+      // Reset form
+      setFormData({
+        name: "",
+        description: "",
+        category: "",
+        price: 0,
+        unit: "lb",
+        stock: 0,
+        status: "active",
+        images: [],
+      });
+      setImageUrl(null);
+      setErrors({});
+    } catch (error: any) {
+      // console.error removed
+      toast.error(error.message || "Failed to save listing. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.success(
-      isEditing
-        ? "Listing updated successfully!"
-        : "Listing created successfully!"
-    );
-
-    onOpenChange(false);
-
-    // Reset form
-    setFormData({
-      name: "",
-      description: "",
-      category: "",
-      price: 0,
-      unit: "lb",
-      stock: 0,
-      status: "active",
-      images: [],
-    });
-    setErrors({});
   };
 
   const handleCancel = () => {
@@ -186,7 +227,7 @@ export function MyListingDialog({
     setErrors({});
   };
 
-  console.log("MyListingDialog open state:", open); // Debug log
+  // console.log removed
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -365,18 +406,28 @@ export function MyListingDialog({
             </Select>
           </div>
 
-          {/* Image Upload Placeholder */}
+          {/* Image Upload */}
           <div className="space-y-2">
-            <Label className="text-slate-700">Product Images</Label>
-            <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center hover:border-slate-300 transition-colors cursor-pointer">
-              <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-              <p className="text-slate-600 mb-1">
-                Click to upload or drag and drop
+            <Label className="text-slate-700">Product Image</Label>
+            {user ? (
+              <ImageUpload
+                onImageChange={handleImageChange}
+                existingImage={imageUrl?.[0] || undefined}
+                userId={user.id}
+              />
+            ) : (
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center">
+                <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                <p className="text-slate-600 mb-1">
+                  Please log in to upload images
+                </p>
+              </div>
+            )}
+            {imageUrl && (
+              <p className="text-xs text-slate-500 break-all">
+                Image URL: {imageUrl}
               </p>
-              <p className="text-slate-400 text-sm">
-                PNG, JPG or WEBP (max. 5MB)
-              </p>
-            </div>
+            )}
           </div>
 
           <DialogFooter className="gap-2">
@@ -385,14 +436,20 @@ export function MyListingDialog({
               variant="outline"
               onClick={handleCancel}
               className="border-slate-200 text-slate-700 hover:bg-slate-50"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isSubmitting}
             >
-              {isEditing ? "Update Listing" : "Create Listing"}
+              {isSubmitting
+                ? "Saving..."
+                : isEditing
+                ? "Update Listing"
+                : "Create Listing"}
             </Button>
           </DialogFooter>
         </form>

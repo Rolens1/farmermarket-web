@@ -1,13 +1,9 @@
+import { Product } from "../../product/dto/create-product.dto";
+
 export interface CartItem {
-  productId: string;
+  product_id: string;
   quantity: number;
-  product?: {
-    id: string;
-    name: string;
-    price: number;
-    imageUrl?: string;
-    slug: string;
-  };
+  product?: Product;
 }
 
 export interface Cart {

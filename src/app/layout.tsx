@@ -8,6 +8,7 @@ import { Leaf } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "../context/AuthContext";
+import { CartProvider } from "../context/CartContext";
 
 export default function RootLayout({
   children,
@@ -26,10 +27,12 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          {currentPage !== "login" && (
-            <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-          )}
-          {children}
+          <CartProvider>
+            {currentPage !== "login" && (
+              <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+            )}
+            {children}
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

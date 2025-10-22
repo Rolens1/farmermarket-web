@@ -4,7 +4,7 @@ import { ProductSearchParamsInterface } from "./dto/product-search.dto";
 
 export const getProducts = async () => {
   const res = await get("/products");
-  console.log("Get products response:", res);
+  // console.log removed
   if (!res.ok) {
     throw new Error("Failed to fetch products");
   }
@@ -18,7 +18,7 @@ export const createProduct = async (productData: CreateProductDTO) => {
   if (!res.ok) {
     throw new Error("Failed to create product");
   }
-  console.log("Create product response:", res);
+  // console.log removed
 };
 
 export const getUserProducts = async () => {
@@ -58,6 +58,6 @@ export const searchProducts = async (params: ProductSearchParamsInterface) => {
   //   }
   // });
   const res = await get(`/products/s?${params}`);
-  console.log("Search products response:", res);
+  // console.log removed
   return res;
 };

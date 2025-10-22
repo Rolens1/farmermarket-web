@@ -26,7 +26,7 @@ export default function LoginPage() {
     event.preventDefault();
     const email = formData.email;
     const password = formData.password;
-    console.log("Email:", email, "Password:", password);
+    // console.log removed
     await signIn(email, password);
     // Fetch user info after login
     try {

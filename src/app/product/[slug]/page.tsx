@@ -6,73 +6,77 @@ import { Button } from "@/components/ui/button";
 import { ImageWithFallback } from "@/components/helper/ImageWithFallback";
 import { ProductCard } from "@/components/ProductCard";
 import { useRouter } from "next/navigation";
-import { Metadata } from "next/dist/lib/metadata/types/metadata-interface";
-import { getProductBySlug, getProducts } from "@/app/api/product/products";
+import { getProductBySlug } from "@/app/api/product/products";
 import { useEffect, useState } from "react";
 import { Product } from "@/app/api/product/dto/create-product.dto";
 
-// async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-//   const product = await getProductBySlug(params.slug);
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 
-//   if (!product) {
-//     return {
-//       title: "Product Not Found",
-//     };
-//   }
-
-//   return {
-//     title: `${product.name} | Farmers Market`,
-//     description: product.description,
-//     openGraph: {
-//       title: product.name,
-//       description: product.description,
-//       images: [product.image || "/default-product.jpg"],
-//       type: "website",
-//     },
-//     twitter: {
-//       card: "summary_large_image",
-//       title: product.name,
-//       description: product.description,
-//       images: [product.image || "/default-product.jpg"],
-//     },
-//     keywords: [
-//       product.category,
-//       "farmers market",
-//       "local produce",
-//       product.name,
-//     ],
-//   };
-// }
-// async function generateStaticParams() {
-//   const products = await getProducts(); // Your API call to get all products
-
-//   return products.map((product: any) => ({
-//     slug: product.slug,
-//   }));
-// }
-
-export default function ProductPage({ params }: any) {
+export default function ProductPage({ params }: PageProps) {
   const [product, setProduct] = useState<Product | null>(null);
+  const [mainImage, setMainImage] = useState<string>("/default-product.jpg");
+  const [slug, setSlug] = useState<string>("");
   const router = useRouter();
 
+  // Unwrap the params promise
   useEffect(() => {
-    async function fetchProduct() {
-      const product = await getProductBySlug(params.slug);
+    async function unwrapParams() {
+      const unwrappedParams = await params;
+      setSlug(unwrappedParams.slug);
+    }
+    unwrapParams();
+  }, [params]);
 
-      console.log("Fetched product:", product);
-      // Fetch product data here if needed
+  useEffect(() => {
+    if (!slug) return;
+
+    async function fetchProduct() {
+      const product = await getProductBySlug(slug);
+      // console.log removed
+
       if (!product) {
         router.push("/not-found");
+        return;
       }
+
       setProduct(product);
+
+      // Set the main image
+      if (product?.image) {
+        const imageUrl = Array.isArray(product.image)
+          ? product.image[0]
+          : product.image;
+        // console.log removed
+        setMainImage(imageUrl);
+
+        // Test if image loads
+        const img = new Image();
+        img.onload = () => {};
+        img.onerror = () => {
+          setMainImage("/default-product.jpg");
+        };
+        img.src = imageUrl;
+      }
     }
-
     fetchProduct();
-  }, []);
+  }, [slug, router]);
 
-  const handleProductClick = (productId: string) => {
-    console.log(params.slug);
-    // router.push(`/product/${productId}`);
+  // Alternative approach using React.use() (if you prefer)
+  // You'll need to add "use client" and import { use } from "react"
+  /*
+  import { use } from "react";
+  
+  export default function ProductPage({ params }: PageProps) {
+    const unwrappedParams = use(params);
+    const slug = unwrappedParams.slug;
+    // ... rest of your component
+  }
+  */
+
+  const handleThumbnailClick = (imageUrl: string) => {
+    setMainImage(imageUrl);
   };
 
   const thumbnails = [
@@ -80,6 +84,14 @@ export default function ProductPage({ params }: any) {
     "https://images.unsplash.com/photo-1604337214275-86010944959d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcmdhbmljJTIwdmVnZXRhYmxlcyUyMGNvbG9yZnVsfGVufDF8fHx8MTc1OTgwODM0MXww&ixlib=rb-4.1.0&q=80&w=1080",
     "https://images.unsplash.com/photo-1603403887668-a23fbcd4d8be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZydWl0cyUyMGJhc2tldHxlbnwxfHx8fDE3NTk4MDgzNDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
   ];
+
+  // Use actual product image for thumbnails if available
+  const productThumbnails = product?.image
+    ? Array.isArray(product.image)
+      ? product.image
+      : [product.image]
+    : thumbnails;
+
   const relatedProducts = [
     {
       image:
@@ -130,6 +142,16 @@ export default function ProductPage({ params }: any) {
     },
   ];
 
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <div className="max-w-[1440px] mx-auto px-8 py-8">
@@ -158,26 +180,33 @@ export default function ProductPage({ params }: any) {
           <div className="col-span-2">
             <div className="rounded-3xl overflow-hidden mb-4 shadow-lg">
               <ImageWithFallback
-                src={product?.image || "/default-product.jpg"}
+                src={mainImage}
                 alt={product?.name || "Product Image"}
                 className="w-full h-[600px] object-cover"
+                onError={(e) => {
+                  console.log("❌ Main image failed to load");
+                  e.currentTarget.src = "/default-product.jpg";
+                }}
+                onLoad={() => console.log("✅ Main image loaded successfully")}
               />
             </div>
             <div className="grid grid-cols-3 gap-4">
-              {thumbnails.map((thumb, index) => (
+              {productThumbnails.map((thumb, index) => (
                 <div
                   key={index}
                   className="rounded-2xl overflow-hidden cursor-pointer hover:opacity-75 transition-opacity"
+                  onClick={() => handleThumbnailClick(thumb)}
                 >
                   <ImageWithFallback
                     src={thumb}
-                    alt={`Thumbnail ${index + 1}`}
+                    alt={`${product.name} thumbnail ${index + 1}`}
                     className="w-full h-32 object-cover"
                   />
                 </div>
               ))}
             </div>
           </div>
+
           {/* Right - Info */}
           <div className="space-y-6">
             <div>
@@ -289,11 +318,7 @@ export default function ProductPage({ params }: any) {
             <h2 className="text-foreground mb-8">Related Products</h2>
             <div className="grid grid-cols-3 gap-6">
               {relatedProducts.map((product, index) => (
-                <ProductCard
-                  key={index}
-                  product={product}
-                  onClick={() => handleProductClick(product.name)}
-                />
+                <ProductCard key={index} product={product as any} />
               ))}
             </div>
           </div>

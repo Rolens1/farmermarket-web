@@ -8,6 +8,7 @@ import { ImageWithFallback } from "@/components/helper/ImageWithFallback";
 import { CategoryCard } from "@/components/CategoryCard";
 import { ProductCard } from "@/components/ProductCard";
 import { useEffect, useState } from "react";
+import { useCart } from "@/context/CartContext";
 import { get } from "./api/fetch.api";
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
     { icon: Flower, label: "Flowers" },
   ];
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const { addToCart, loading: cartLoading } = useCart();
 
   useEffect(() => {
     const fetchRecent = async () => {
@@ -52,13 +54,17 @@ export default function Home() {
                 delivered to your door.
               </p>
             </div>
-            <SearchBar onSearch={query => {
-              if (query && query.trim()) {
-                router.push(`/browse?query=${encodeURIComponent(query.trim())}`);
-              } else {
-                router.push("/browse");
-              }
-            }} />
+            <SearchBar
+              onSearch={(query) => {
+                if (query && query.trim()) {
+                  router.push(
+                    `/browse?query=${encodeURIComponent(query.trim())}`
+                  );
+                } else {
+                  router.push("/browse");
+                }
+              }}
+            />
           </div>
           {/* Right Side */}
           <div className="rounded-3xl overflow-hidden shadow-2xl">
@@ -106,11 +112,15 @@ export default function Home() {
           {/* Horizontal scrollable list after it should push to product ID or slug */}
           {recentProducts.map((product) => (
             <ProductCard
-              key={product.id || product.name}
+              key={product.slug || product.id || product.name}
               product={product}
               onClick={() =>
-                router.push(`/product/${product.id || product.name}`)
+                router.push(
+                  `/product/${product.slug || product.id || product.name}`
+                )
               }
+              onAddToCart={() => addToCart(product.slug || product.id, product)}
+              loading={cartLoading}
             />
           ))}
         </div>

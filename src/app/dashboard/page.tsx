@@ -81,7 +81,7 @@ import { signOut } from "../api/auth/login";
 import { deleteProduct, getUserProducts } from "../api/product/products";
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("listings");
   const [sidebarOpen, setSidebarOpen] = useState("dashboard");
   const [listingDialogOpen, setListingDialogOpen] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
@@ -95,7 +95,7 @@ export default function DashboardPage() {
   };
 
   const handleNewListing = () => {
-    console.log("New Listing button clicked"); // Debug log
+    // console.log removed
     setSelectedListing(null);
     setListingDialogOpen(true);
   };
@@ -111,10 +111,10 @@ export default function DashboardPage() {
     const fetchListings = async () => {
       try {
         const response = await getUserProducts();
-        console.log("User products fetched:", response);
+        // console.log removed
         setCurrentListings(response);
       } catch (error) {
-        console.error("Error fetching listings:", error);
+        // console.error removed
       }
     };
 
@@ -296,7 +296,7 @@ export default function DashboardPage() {
             <button
               onClick={() => {
                 setSidebarOpen("dashboard");
-                setActiveTab("overview");
+                setActiveTab("listings");
               }}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
                 sidebarOpen === "dashboard"
@@ -399,6 +399,7 @@ export default function DashboardPage() {
                 <Button
                   variant="outline"
                   className="border-slate-200 text-slate-700 hover:bg-slate-50"
+                  disabled
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export
@@ -420,12 +421,14 @@ export default function DashboardPage() {
                 <TabsTrigger
                   value="overview"
                   className="data-[state=active]:bg-white"
+                  disabled
                 >
                   Overview
                 </TabsTrigger>
                 <TabsTrigger
                   value="analytics"
                   className="data-[state=active]:bg-white"
+                  disabled
                 >
                   Analytics
                 </TabsTrigger>

@@ -54,3 +54,39 @@ export const securedGet = async (url: string) => {
   });
   return response.json();
 };
+
+export const securedDelete = async (url: string, data: unknown = {}) => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  if (!accessToken) {
+    throw new Error("No access token found");
+  }
+
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+};
+
+export const securedPut = async (url: string, data: unknown = {}) => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  if (!accessToken) {
+    throw new Error("No access token found");
+  }
+
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+};

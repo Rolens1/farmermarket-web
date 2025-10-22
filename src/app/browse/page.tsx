@@ -20,6 +20,7 @@ import { Product } from "../api/product/dto/create-product.dto";
 import { get } from "../api/fetch.api";
 import { searchProducts } from "../api/product/products";
 import { ProductSearchParamsInterface } from "../api/product/dto/product-search.dto";
+import { useCart } from "@/context/CartContext";
 
 export default function BrowsePage() {
   const defaultFilters = {
@@ -36,6 +37,7 @@ export default function BrowsePage() {
   const [loading, setLoading] = useState(true);
 
   const [products, setProducts] = useState<Product[]>([]);
+  const { addToCart, loading: cartLoading } = useCart();
 
   // On mount, parse URL params and set filters/searchQuery
   useEffect(() => {
@@ -234,6 +236,8 @@ export default function BrowsePage() {
                         key={index}
                         product={product}
                         onClick={() => router.push(`/product/${product.slug}`)}
+                        onAddToCart={(prod) => addToCart(prod.id, prod)}
+                        loading={cartLoading}
                       />
                     ))}
                 </div>

@@ -2,10 +2,11 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Leaf } from "lucide-react";
+import { Leaf, ShoppingCart } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "./ui/button";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 export function Navbar({
   currentPage,
@@ -15,6 +16,7 @@ export function Navbar({
   setCurrentPage: (page: string) => void;
 }) {
   const { user } = useAuth();
+  const { cart } = useCart();
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Browse", path: "/browse" },
@@ -79,6 +81,19 @@ export function Navbar({
               Login
             </Link>
           )}
+          {/* Cart Icon */}
+          <Link href="/cart" className="relative ml-4 group">
+            <ShoppingCart className="w-6 h-6 text-foreground group-hover:text-primary transition-colors" />
+            <span
+              className={`absolute -top-2 -right-2 text-xs rounded-full px-2 py-0.5 font-bold border border-white ${
+                cart.itemCount > 0
+                  ? "bg-primary text-white"
+                  : "bg-gray-200 text-gray-500"
+              }`}
+            >
+              {cart.itemCount}
+            </span>
+          </Link>
         </nav>
         {/* CTA Button */}
         {currentPage !== "dashboard" && (

@@ -12,7 +12,7 @@ export default function TryPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         listing={null}
-        onSave={(listing) => console.log("Saved listing:", listing)}
+        onSave={() => {}}
       />
       <button
         onClick={() => setDialogOpen(true)}

@@ -4,7 +4,7 @@ export interface CreateProductDTO {
   price: number;
   category: string;
   quantity: number;
-  imageUrl?: string;
+  image?: string[];
 }
 
 export interface Product {
@@ -14,7 +14,7 @@ export interface Product {
   price: number;
   category: string;
   quantity: number;
-  image?: string;
+  image?: string[];
   slug?: string;
 }
 export interface ProductWithSeller extends Product {
