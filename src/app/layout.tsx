@@ -1,10 +1,7 @@
 "use client";
 import "./globals.css";
 
-import "./globals.css";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Leaf } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "../context/AuthContext";
@@ -19,6 +16,11 @@ export default function RootLayout({
   const pathname = usePathname();
 
   useEffect(() => {
+    // Wake Render backend on first load (prevents cold-start delay)
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/ping`
+    ).catch(() => {});
+
     const page = pathname === "/" ? "home" : pathname.slice(1);
     setCurrentPage(page);
   }, [pathname]);

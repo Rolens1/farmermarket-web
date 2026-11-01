@@ -99,3 +99,14 @@ Thumbs.db
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+/context/
+/docs/
+/scratch/
+memory.md
+.agents/
+.gemini/
+.claude/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
