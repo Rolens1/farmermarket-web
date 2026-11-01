@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { signIn } from "../api/auth/login";
+import { signIn, signUp } from "../api/auth/login";
 import { useAuth } from "../../context/AuthContext";
 import { securedGet } from "../api/fetch.api";
 import { useRouter } from "next/navigation";
@@ -19,25 +19,68 @@ export default function LoginPage() {
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
   const loginHandler = async (event: React.FormEvent) => {
     event.preventDefault();
-    const email = formData.email;
-    const password = formData.password;
-    // console.log removed
-    await signIn(email, password);
-    // Fetch user info after login
-    try {
-      const response = await securedGet("/auth/me");
-      if (response && response.user) {
-        setUser(response.user);
-      }
-    } catch (e) {
-      // ignore
+    setError(null);
+    setLoading(true);
+
+    const { email, password } = formData;
+
+    // Client-side validation
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      setLoading(false);
+      return;
     }
-    router.push("/dashboard");
+
+    if (isSignup && password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      if (isSignup) {
+        const response = await signUp(email, password);
+        if (response?.statusCode >= 400 || response?.error) {
+          setError(response.message ?? "Sign up failed. Please try again.");
+          setLoading(false);
+          return;
+        }
+        setError(null);
+        // Supabase requires email confirmation — inform the user
+        setError("✅ Check your email to confirm your account before logging in.");
+        setLoading(false);
+        return;
+      } else {
+        const response = await signIn(email, password);
+        if (!response?.accessToken) {
+          setError(
+            response?.message ?? "Invalid email or password. Please try again."
+          );
+          setLoading(false);
+          return;
+        }
+        // Fetch user info after successful login
+        try {
+          const me = await securedGet("/auth/me");
+          if (me?.user) {
+            setUser(me.user);
+          }
+        } catch {
+          // non-fatal, user is still logged in
+        }
+        router.push("/dashboard");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,17 +144,40 @@ export default function LoginPage() {
                 />
               </div>
             )}
+
+            {/* Error / info message */}
+            {error && (
+              <div
+                className={`text-sm px-4 py-3 rounded-2xl ${
+                  error.startsWith("✅")
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-600 border border-red-200"
+                }`}
+              >
+                {error}
+              </div>
+            )}
+
             <Button
               type="submit"
-              className="w-full rounded-full bg-primary hover:bg-primary/90 py-6"
+              disabled={loading}
+              className="w-full rounded-full bg-primary hover:bg-primary/90 py-6 disabled:opacity-60"
             >
-              {/* <Link href="/dashboard">{isSignup ? "Sign Up" : "Log In"}</Link> */}
-              <span>{isSignup ? "Sign Up" : "Log In"}</span>
+              {loading
+                ? isSignup
+                  ? "Creating account…"
+                  : "Logging in…"
+                : isSignup
+                ? "Sign Up"
+                : "Log In"}
             </Button>
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => setIsSignup(!isSignup)}
+                onClick={() => {
+                  setIsSignup(!isSignup);
+                  setError(null);
+                }}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 {isSignup
