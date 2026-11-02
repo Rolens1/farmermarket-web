@@ -9,7 +9,8 @@ interface CartContextType {
   cart: Cart;
   addToCart: (
     productId: string,
-    product?: CartItem["product"]
+    product?: CartItem["product"],
+    quantityToAdd?: number
   ) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   removeFromCart: (productId: string) => Promise<void>;
@@ -78,11 +79,16 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     return { ...cart, items, totalPrice, itemCount };
   };
 
-  const addToCart = async (productId: string, product?: Product) => {
+  const addToCart = async (
+    productId: string,
+    product?: Product,
+    quantityToAdd: number = 1
+  ) => {
     if (!productId) {
       // console.error removed
       return;
     }
+    const qty = Math.max(1, quantityToAdd);
     setLoading(true);
     const currentCart = { ...cart };
     const existingItem = currentCart.items.find(
@@ -94,7 +100,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         ...currentCart,
         items: currentCart.items.map((item) =>
           item.product_id === productId
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + qty }
             : item
         ),
       };
@@ -103,7 +109,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         ...currentCart,
         items: [
           ...currentCart.items,
-          { product_id: productId, quantity: 1, product },
+          { product_id: productId, quantity: qty, product },
         ],
       };
     }

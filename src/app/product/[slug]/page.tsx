@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { ChevronRight, MapPin, MessageCircle, Star } from "lucide-react";
+import { ChevronRight, MapPin, Star, Minus, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageWithFallback } from "@/components/helper/ImageWithFallback";
 import { ProductCard } from "@/components/ProductCard";
@@ -11,6 +11,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Product } from "@/app/api/product/dto/create-product.dto";
 import { useCart } from "@/context/CartContext";
 import { MOCK_PRODUCTS } from "@/data/mockProducts";
+import { toast } from "sonner";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -20,8 +21,16 @@ export default function ProductPage({ params }: PageProps) {
   const [product, setProduct] = useState<Product | null>(null);
   const [mainImage, setMainImage] = useState<string>("/default-product.jpg");
   const [slug, setSlug] = useState<string>("");
+  const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
   const router = useRouter();
   const { addToCart, loading: cartLoading } = useCart();
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    const targetId = product.slug || String(product.id);
+    await addToCart(targetId, product, selectedQuantity);
+    toast.success(`Added ${selectedQuantity} ${product.name} to cart!`);
+  };
 
   // Unwrap the params promise
   useEffect(() => {
@@ -255,13 +264,61 @@ export default function ProductPage({ params }: PageProps) {
               />
             </div>
 
-            <div className="space-y-2 sm:space-y-3">
-              <Button className="w-full rounded-full bg-primary hover:bg-primary/90 py-4 sm:py-6 text-base sm:text-lg">
-                Reserve Now
-              </Button>
-              <Button variant="outline" className="w-full rounded-full py-4 sm:py-6 text-base sm:text-lg">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Message Seller
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center justify-between gap-4 bg-secondary/30 rounded-2xl p-3 border border-border">
+                <span className="text-sm font-medium text-foreground">Quantity</span>
+                <div className="flex items-center gap-2 bg-background rounded-full border border-border px-2 py-1 shadow-sm">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full text-foreground hover:bg-secondary"
+                    onClick={() =>
+                      setSelectedQuantity((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={selectedQuantity <= 1 || cartLoading}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <span className="w-10 text-center font-semibold text-foreground text-sm">
+                    {selectedQuantity}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full text-foreground hover:bg-secondary"
+                    onClick={() =>
+                      setSelectedQuantity((prev) =>
+                        Math.min(product?.quantity || 99, prev + 1)
+                      )
+                    }
+                    disabled={
+                      selectedQuantity >= (product?.quantity || 99) ||
+                      cartLoading
+                    }
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleAddToCart}
+                disabled={cartLoading || (product?.quantity ?? 0) <= 0}
+                className="w-full rounded-full bg-primary hover:bg-primary/90 py-5 sm:py-6 text-base sm:text-lg font-semibold shadow-md flex items-center justify-center gap-2"
+              >
+                <ShoppingBag className="w-5 h-5" />
+                {cartLoading ? (
+                  "Adding to Cart..."
+                ) : (
+                  <span>
+                    Add to Cart • $
+                    {(
+                      Number(product?.price || 0) * selectedQuantity
+                    ).toFixed(2)}
+                  </span>
+                )}
               </Button>
             </div>
           </div>
