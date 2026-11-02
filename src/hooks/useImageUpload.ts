@@ -3,10 +3,17 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// Singleton Supabase client (fixes Q5 — new client per render)
+// Singleton Supabase client for storage only — auth persistence disabled to avoid LockManager errors
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  }
 );
 
 export function useImageUpload() {
@@ -71,6 +78,8 @@ export function useImageUpload() {
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
+      } else {
+        setError("An unknown error occurred");
       }
       throw err;
     }
