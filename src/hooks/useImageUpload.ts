@@ -4,15 +4,25 @@
 import { useState } from "react";
 import { createClient } from "@insforge/sdk";
 
+const rawWebUrl =
+  process.env.NEXT_PUBLIC_INSFORGE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL;
+const baseUrl =
+  rawWebUrl && !rawWebUrl.includes("supabase.co")
+    ? rawWebUrl
+    : "https://pprn26i7.us-east.insforge.app";
+
+const rawWebKey =
+  process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const anonKey =
+  rawWebKey && !rawWebKey.startsWith("eyJ")
+    ? rawWebKey
+    : "anon_d05d2e2d6987608e7786bd21c23125abd753514256ca0b2d4577447612f4e7db";
+
 const insforge = createClient({
-  baseUrl:
-    process.env.NEXT_PUBLIC_INSFORGE_URL ??
-    process.env.NEXT_PUBLIC_SUPABASE_URL ??
-    "https://pprn26i7.us-east.insforge.app",
-  anonKey:
-    process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    "anon_d05d2e2d6987608e7786bd21c23125abd753514256ca0b2d4577447612f4e7db",
+  baseUrl,
+  anonKey,
 });
 
 export function useImageUpload() {
