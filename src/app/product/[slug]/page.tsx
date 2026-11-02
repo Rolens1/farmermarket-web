@@ -112,6 +112,16 @@ export default function ProductPage({ params }: PageProps) {
     );
     return [...list, ...otherProducts].slice(0, 3);
   }, [product, slug]);
+
+  // Discover other fresh goods offered by the same farm
+  const sellerOtherProducts = useMemo(() => {
+    if (!product) return [];
+    const sellerId = (product as any).sellerId;
+    if (!sellerId) return [];
+    return MOCK_PRODUCTS.filter(
+      (p) => p.sellerId === sellerId && p.slug !== slug && String(p.id) !== slug
+    ).slice(0, 3);
+  }, [product, slug]);
   const reviews = [
     {
       name: "Sarah Johnson",
@@ -222,18 +232,25 @@ export default function ProductPage({ params }: PageProps) {
             </div>
 
             <div>
-              <h4 className="text-foreground mb-1 sm:mb-2 text-base sm:text-lg">Farm</h4>
-              <p className="text-foreground text-sm sm:text-base">Green Valley Farm</p>
+              <h4 className="text-foreground mb-1 sm:mb-2 text-base sm:text-lg">Farm & Producer</h4>
+              <p className="text-foreground text-sm sm:text-base font-semibold">
+                {(product as any)?.farmName || (product as any)?.sellerName || "Local Verified Farm"}
+              </p>
               <div className="flex items-center gap-1 text-muted-foreground mt-1">
-                <MapPin className="w-4 h-4" />
-                <span className="text-muted-foreground text-xs sm:text-sm">2.3 mi away</span>
+                <MapPin className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-muted-foreground text-xs sm:text-sm">
+                  {(product as any)?.distance ? `${(product as any).distance} mi away` : "Nearby Farmstead"}
+                </span>
               </div>
             </div>
 
             <div className="bg-card rounded-2xl overflow-hidden border border-border">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1564085007988-8566e9f276cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtJTIwbGFuZHNjYXBlJTIwc3Vubnl8ZW58MXx8fHwxNzU5ODA4MzQ0fDA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Farm location"
+                src={
+                  (product as any)?.sellerBanner ||
+                  "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1200&auto=format&fit=crop&q=80"
+                }
+                alt="Farm landscape"
                 className="w-full h-32 sm:h-48 object-cover"
               />
             </div>
@@ -301,6 +318,35 @@ export default function ProductPage({ params }: PageProps) {
               ))}
             </div>
           </div>
+
+          {/* More from this Farm */}
+          {sellerOtherProducts.length > 0 && (
+            <div className="mb-10 lg:mb-16">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-foreground text-lg sm:text-xl font-bold">
+                  More from {(product as any)?.farmName || "this Producer"}
+                </h2>
+                <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+                  Fresh, natural items grown & prepared by the same farm
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {sellerOtherProducts.map((p) => (
+                  <ProductCard
+                    key={p.slug || p.id}
+                    product={p as any}
+                    onClick={() =>
+                      router.push(`/product/${p.slug || p.id}`)
+                    }
+                    onAddToCart={() =>
+                      addToCart(p.slug || p.id, p as any)
+                    }
+                    loading={cartLoading}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Related Products */}
           <div>
