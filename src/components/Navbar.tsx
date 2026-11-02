@@ -1,9 +1,8 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Leaf, ShoppingCart } from "lucide-react";
-import { useEffect } from "react";
 import { Button } from "./ui/button";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "@/context/CartContext";
@@ -17,14 +16,38 @@ export function Navbar({
 }) {
   const { user } = useAuth();
   const { cart } = useCart();
+  const [isPopping, setIsPopping] = useState(false);
+  const [popDiff, setPopDiff] = useState(1);
+  const prevCount = useRef(cart.itemCount);
+  const isInitialMount = useRef(true);
+
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Browse", path: "/browse" },
-    // { name: "Contact", path: "/contact" },
   ];
 
   const router = useRouter();
   const pathname = usePathname();
+
+  // Silent pop animation on cart addition
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevCount.current = cart.itemCount;
+      return;
+    }
+
+    if (cart.itemCount > prevCount.current) {
+      setPopDiff(cart.itemCount - prevCount.current);
+      setIsPopping(true);
+      const timer = setTimeout(() => {
+        setIsPopping(false);
+      }, 700);
+      prevCount.current = cart.itemCount;
+      return () => clearTimeout(timer);
+    }
+    prevCount.current = cart.itemCount;
+  }, [cart.itemCount]);
 
   // Update currentPage based on the current pathname
   useEffect(() => {
@@ -84,20 +107,41 @@ export function Navbar({
               Login
             </Link>
           )}
-          {/* Cart Icon */}
-          <Link href="/cart" className="relative ml-2 sm:ml-4 group">
-            <ShoppingCart className="w-6 h-6 text-foreground group-hover:text-primary transition-colors" />
+
+          {/* Cart Icon with Pop Animation */}
+          <Link
+            href="/cart"
+            className="relative ml-2 sm:ml-4 group flex items-center justify-center p-1"
+            aria-label="Shopping Cart"
+          >
+            <ShoppingCart
+              className={`w-6 h-6 text-foreground group-hover:text-primary transition-all duration-300 ${
+                isPopping ? "animate-cart-bump text-emerald-700" : ""
+              }`}
+            />
+            {/* Pop Badge */}
             <span
-              className={`absolute -top-2 -right-2 text-xs rounded-full px-2 py-0.5 font-bold border border-white ${
-                cart.itemCount > 0
+              key={`badge-${cart.itemCount}-${isPopping ? "pop" : "idle"}`}
+              className={`absolute -top-2 -right-2 text-xs rounded-full px-2 py-0.5 font-bold border border-white select-none transition-all duration-300 ${
+                isPopping
+                  ? "animate-cart-pop bg-emerald-600 ring-4 ring-emerald-300/50 shadow-md text-white"
+                  : cart.itemCount > 0
                   ? "bg-primary text-white"
                   : "bg-gray-200 text-gray-500"
               }`}
             >
               {cart.itemCount}
             </span>
+
+            {/* Floating Pop Tag (+1 or +Qty) with zero sound */}
+            {isPopping && (
+              <span className="pointer-events-none absolute -top-5 -right-2 text-[10px] font-extrabold text-white bg-emerald-600 border border-emerald-400 px-1.5 py-0.2 rounded-full shadow-md animate-float-up">
+                +{popDiff}
+              </span>
+            )}
           </Link>
         </nav>
+
         {/* CTA Button */}
         {currentPage !== "dashboard" && (
           <div className="mt-2 sm:mt-0">

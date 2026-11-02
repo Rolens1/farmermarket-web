@@ -1,7 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { ImageWithFallback } from "./helper/ImageWithFallback";
 import { Product } from "@/app/api/product/dto/create-product.dto";
-import { MapPin } from "lucide-react";
+import { MapPin, Check } from "lucide-react";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   vegetables: "🥕",
@@ -27,6 +30,7 @@ export function ProductCard({
   onAddToCart?: (product: Product) => void;
   loading?: boolean;
 }) {
+  const [justAdded, setJustAdded] = useState(false);
   const images = Array.isArray(product.image)
     ? product.image
     : product.image
@@ -35,6 +39,15 @@ export function ProductCard({
   const secondaryImages = images.slice(1);
   const categoryKey = (product.category ?? "").toLowerCase();
   const categoryEmoji = CATEGORY_EMOJI[categoryKey];
+
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(product);
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 1200);
+    }
+  };
 
   return (
     <div className="bg-card rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border group cursor-pointer flex flex-col h-full">
@@ -80,14 +93,24 @@ export function ProductCard({
           </span>
         </div>
         <Button
-          className="w-full rounded-full bg-primary hover:bg-primary/90 mt-auto text-xs sm:text-base py-2 sm:py-3"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onAddToCart) onAddToCart(product);
-          }}
+          className={`w-full rounded-full mt-auto text-xs sm:text-base py-2 sm:py-3 transition-all duration-300 active:scale-95 ${
+            justAdded
+              ? "bg-emerald-700 hover:bg-emerald-800 text-white scale-[1.02] shadow-md ring-2 ring-emerald-300/60"
+              : "bg-primary hover:bg-primary/90 text-white"
+          }`}
+          onClick={handleAddClick}
           disabled={loading}
         >
-          {loading ? "Adding..." : "Add to Cart"}
+          {justAdded ? (
+            <span className="flex items-center gap-1.5 justify-center font-bold">
+              <Check className="w-4 h-4 text-emerald-200" />
+              Added!
+            </span>
+          ) : loading ? (
+            "Adding..."
+          ) : (
+            "Add to Cart"
+          )}
         </Button>
       </div>
     </div>

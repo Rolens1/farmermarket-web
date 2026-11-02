@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { ChevronRight, MapPin, Star, Minus, Plus, ShoppingBag } from "lucide-react";
+import { ChevronRight, MapPin, Star, Minus, Plus, ShoppingBag, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageWithFallback } from "@/components/helper/ImageWithFallback";
 import { ProductCard } from "@/components/ProductCard";
@@ -22,6 +22,7 @@ export default function ProductPage({ params }: PageProps) {
   const [mainImage, setMainImage] = useState<string>("/default-product.jpg");
   const [slug, setSlug] = useState<string>("");
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
+  const [justAdded, setJustAdded] = useState<boolean>(false);
   const router = useRouter();
   const { addToCart, loading: cartLoading } = useCart();
 
@@ -29,6 +30,8 @@ export default function ProductPage({ params }: PageProps) {
     if (!product) return;
     const targetId = product.slug || String(product.id);
     await addToCart(targetId, product, selectedQuantity);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1400);
     toast.success(`Added ${selectedQuantity} ${product.name} to cart!`);
   };
 
@@ -306,18 +309,29 @@ export default function ProductPage({ params }: PageProps) {
               <Button
                 onClick={handleAddToCart}
                 disabled={cartLoading || (product?.quantity ?? 0) <= 0}
-                className="w-full rounded-full bg-primary hover:bg-primary/90 py-5 sm:py-6 text-base sm:text-lg font-semibold shadow-md flex items-center justify-center gap-2"
+                className={`w-full rounded-full py-5 sm:py-6 text-base sm:text-lg font-semibold shadow-md flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 ${
+                  justAdded
+                    ? "bg-emerald-700 hover:bg-emerald-800 text-white scale-[1.02] ring-2 ring-emerald-300/60"
+                    : "bg-primary hover:bg-primary/90 text-white"
+                }`}
               >
-                <ShoppingBag className="w-5 h-5" />
-                {cartLoading ? (
+                {justAdded ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-200" />
+                    <span>Added to Cart!</span>
+                  </>
+                ) : cartLoading ? (
                   "Adding to Cart..."
                 ) : (
-                  <span>
-                    Add to Cart • $
-                    {(
-                      Number(product?.price || 0) * selectedQuantity
-                    ).toFixed(2)}
-                  </span>
+                  <>
+                    <ShoppingBag className="w-5 h-5" />
+                    <span>
+                      Add to Cart • $
+                      {(
+                        Number(product?.price || 0) * selectedQuantity
+                      ).toFixed(2)}
+                    </span>
+                  </>
                 )}
               </Button>
             </div>
