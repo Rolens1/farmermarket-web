@@ -1,4 +1,4 @@
-import { post } from "../fetch.api";
+import { post, securedGet } from "../fetch.api";
 
 export const signIn = async (email: string, password: string) => {
   const response = await post("/auth/signin", { email, password });
@@ -33,7 +33,6 @@ export const refreshToken = async (token: string) => {
   return response;
 };
 
-export const fetchMe = async (accessToken: string) => {
-  const response = await post("/auth/me", { accessToken });
-  return response;
+export const fetchMe = async () => {
+  return await securedGet("/auth/me");
 };

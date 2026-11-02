@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
@@ -9,14 +9,12 @@ import { Switch } from "./ui/switch";
 import { ProductSearchParamsInterface } from "@/app/api/product/dto/product-search.dto";
 
 export function FilterSidebar({
-  setProducts,
   searchQuery,
   setSearchQuery,
   filters,
   setFilters,
   onConfirmSearch,
 }: {
-  setProducts: unknown;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   filters: any;
@@ -40,7 +38,6 @@ export function FilterSidebar({
   };
 
   const handlePriceRangeChange = (min: number, max: number) => {
-    console.log("Price range changed:", min, max);
     setFilters((prevFilters: ProductSearchParamsInterface) => {
       const newFilters = { ...prevFilters, minPrice: min };
       if (max < 100) {
@@ -53,7 +50,6 @@ export function FilterSidebar({
   };
 
   const handleDistanceChange = (distance: number) => {
-    console.log("Distance changed:", distance);
     setFilters((prevFilters: ProductSearchParamsInterface) => ({
       ...prevFilters,
       distance,

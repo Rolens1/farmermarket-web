@@ -2,9 +2,7 @@
 "use client";
 import { ArrowUpDown, SlidersHorizontal } from "lucide-react";
 import { FilterSidebar } from "@/components/FilterSideBar";
-import { ProductBar } from "@/components/ui/product-bar";
 import { Button } from "@/components/ui/button";
-
 import {
   Select,
   SelectContent,
@@ -14,40 +12,53 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ProductCard } from "@/components/ProductCard";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useCallback, useRef, useMemo, Suspense } from "react";
 import { Product } from "../api/product/dto/create-product.dto";
 import { get } from "../api/fetch.api";
 import { searchProducts } from "../api/product/products";
 import { ProductSearchParamsInterface } from "../api/product/dto/product-search.dto";
 import { useCart } from "@/context/CartContext";
 
-export default function BrowsePage() {
+type SortKey = "freshness" | "price-low" | "price-high";
+
+function sortProducts(products: Product[], sortBy: SortKey): Product[] {
+  const sorted = [...products];
+  if (sortBy === "price-low") {
+    sorted.sort((a, b) => Number(a.price) - Number(b.price));
+  } else if (sortBy === "price-high") {
+    sorted.sort((a, b) => Number(b.price) - Number(a.price));
+  }
+  // "freshness" uses default API order (newest first)
+  return sorted;
+}
+
+function BrowsePageInner() {
   const defaultFilters = {
-    category: undefined,
+    category: undefined as string | undefined,
     minPrice: 0,
     maxPrice: 100,
     distance: 10,
     pickupAvailable: false,
     deliveryAvailable: false,
   };
+
   const [filters, setFilters] = useState(defaultFilters);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortKey>("freshness");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
-
   const [products, setProducts] = useState<Product[]>([]);
   const { addToCart, loading: cartLoading } = useCart();
 
-  // On mount, parse URL params and set filters/searchQuery
+  // Parse URL search params on mount (Next.js-safe, no window.location)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
     const newFilters: any = { ...defaultFilters };
-    params.forEach((value, key) => {
+    searchParams.forEach((value, key) => {
       if (key === "query") {
         setSearchQuery(value);
       } else if (key in defaultFilters) {
-        // Convert to correct type
         if (key === "minPrice" || key === "maxPrice" || key === "distance") {
           newFilters[key] = Number(value);
         } else if (key === "pickupAvailable" || key === "deliveryAvailable") {
@@ -58,10 +69,10 @@ export default function BrowsePage() {
       }
     });
     setFilters(newFilters);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProducts = async (params: ProductSearchParamsInterface) => {
-    // Remove undefined, empty, or default values
     const cleaned = Object.fromEntries(
       Object.entries(params).filter(
         ([k, v]) =>
@@ -74,16 +85,12 @@ export default function BrowsePage() {
           !(k === "deliveryAvailable" && v === false)
       )
     );
-    const qs = new URLSearchParams(
-      Object.entries(cleaned).map(([k, v]) => [k, String(v)])
-    ).toString();
     let productsData;
-    if (qs.length === 0) {
+    if (Object.keys(cleaned).length === 0) {
       productsData = await get("/products");
     } else {
-      productsData = await searchProducts(qs as ProductSearchParamsInterface);
+      productsData = await searchProducts(cleaned as ProductSearchParamsInterface);
     }
-    // Always set products to an array
     if (Array.isArray(productsData)) {
       setProducts(productsData);
     } else if (productsData && Array.isArray(productsData.products)) {
@@ -94,11 +101,7 @@ export default function BrowsePage() {
   };
 
   const handleConfirmSearch = useCallback(() => {
-    const params = {
-      ...filters,
-      query: searchQuery,
-    };
-    // Remove undefined or default values
+    const params = { ...filters, query: searchQuery };
     const cleaned = Object.fromEntries(
       Object.entries(params).filter(
         ([k, v]) =>
@@ -111,32 +114,26 @@ export default function BrowsePage() {
           !(k === "deliveryAvailable" && v === false)
       )
     );
-    const qs = new URLSearchParams(
-      cleaned as Record<string, string>
-    ).toString();
+    const qs = new URLSearchParams(cleaned as Record<string, string>).toString();
     router.push(`/browse${qs ? `?${qs}` : ""}`);
   }, [filters, searchQuery, router]);
 
-  // Debounce search/filter API calls
+  // Debounced fetch on filter/search changes
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     setLoading(true);
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
-      const params = {
-        ...filters,
-        query: searchQuery,
-      };
+      const params = { ...filters, query: searchQuery };
       fetchProducts(params).finally(() => setLoading(false));
-    }, 400); // 400ms debounce
+    }, 400);
     return () => {
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, searchQuery]);
+
+  const sortedProducts = useMemo(() => sortProducts(products, sortBy), [products, sortBy]);
 
   return (
     <div className="min-h-screen">
@@ -152,21 +149,32 @@ export default function BrowsePage() {
                 className="rounded-full border-border"
               />
             </div>
-            <Select defaultValue="all">
+            <Select
+              value={filters.category ?? "all"}
+              onValueChange={(val) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  category: val === "all" ? undefined : val,
+                }))
+              }
+            >
               <SelectTrigger className="w-[200px] rounded-full">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="vegetables">Vegetables</SelectItem>
-                <SelectItem value="fruits">Fruits</SelectItem>
-                <SelectItem value="dairy">Dairy</SelectItem>
-                <SelectItem value="meat">Meat</SelectItem>
-                <SelectItem value="honey">Honey</SelectItem>
-                <SelectItem value="flowers">Flowers</SelectItem>
+                <SelectItem value="Vegetables">Vegetables</SelectItem>
+                <SelectItem value="Fruits">Fruits</SelectItem>
+                <SelectItem value="Dairy">Dairy</SelectItem>
+                <SelectItem value="Meat">Meat</SelectItem>
+                <SelectItem value="Honey">Honey</SelectItem>
+                <SelectItem value="Flowers">Flowers</SelectItem>
               </SelectContent>
             </Select>
-            <Select defaultValue="freshness">
+            <Select
+              value={sortBy}
+              onValueChange={(val) => setSortBy(val as SortKey)}
+            >
               <SelectTrigger className="w-[200px] rounded-full">
                 <ArrowUpDown className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Sort by" />
@@ -175,7 +183,6 @@ export default function BrowsePage() {
                 <SelectItem value="freshness">Freshness</SelectItem>
                 <SelectItem value="price-low">Price: Low to High</SelectItem>
                 <SelectItem value="price-high">Price: High to Low</SelectItem>
-                <SelectItem value="distance">Distance</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" className="rounded-full">
@@ -190,7 +197,6 @@ export default function BrowsePage() {
           {/* Sidebar */}
           <aside className="w-80 flex-shrink-0">
             <FilterSidebar
-              setProducts={setProducts}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               filters={filters}
@@ -205,7 +211,7 @@ export default function BrowsePage() {
               <h3 className="text-foreground">
                 {loading
                   ? "Loading products..."
-                  : `Showing ${products.length} products`}
+                  : `Showing ${sortedProducts.length} products`}
               </h3>
             </div>
 
@@ -230,38 +236,36 @@ export default function BrowsePage() {
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-6">
-                  {products &&
-                    products.map((product, index) => (
-                      <ProductCard
-                        key={index}
-                        product={product}
-                        onClick={() => router.push(`/product/${product.slug}`)}
-                        onAddToCart={(prod) => addToCart(prod.id, prod)}
-                        loading={cartLoading}
-                      />
-                    ))}
-                </div>
-
-                {/* Pagination */}
-                <div className="flex justify-center gap-2 mt-12">
-                  {[1, 2, 3, 4, 5].map((page) => (
-                    <button
-                      key={page}
-                      className={`w-10 h-10 rounded-full ${
-                        page === 1
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-card border border-border text-foreground hover:bg-secondary"
-                      } transition-colors`}
-                    >
-                      {page}
-                    </button>
+                  {sortedProducts.map((product, index) => (
+                    <ProductCard
+                      key={index}
+                      product={product}
+                      onClick={() => router.push(`/product/${product.slug}`)}
+                      onAddToCart={(prod) => addToCart(prod.id, prod)}
+                      loading={cartLoading}
+                    />
                   ))}
                 </div>
+
+                {sortedProducts.length === 0 && (
+                  <div className="text-center py-20 text-muted-foreground">
+                    <p className="text-lg">No products found</p>
+                    <p className="text-sm mt-2">Try adjusting your filters or search query</p>
+                  </div>
+                )}
               </>
             )}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>}>
+      <BrowsePageInner />
+    </Suspense>
   );
 }

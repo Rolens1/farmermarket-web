@@ -3,13 +3,8 @@ import { CreateProductDTO } from "./dto/create-product.dto";
 import { ProductSearchParamsInterface } from "./dto/product-search.dto";
 
 export const getProducts = async () => {
-  const res = await get("/products");
-  // console.log removed
-  if (!res.ok) {
-    throw new Error("Failed to fetch products");
-  }
-
-  return res.json();
+  // get() already returns parsed JSON — just return it directly
+  return await get("/products");
 };
 
 export const createProduct = async (productData: CreateProductDTO) => {
@@ -18,46 +13,38 @@ export const createProduct = async (productData: CreateProductDTO) => {
   if (!res.ok) {
     throw new Error("Failed to create product");
   }
-  // console.log removed
 };
 
 export const getUserProducts = async () => {
-  const res = await securedGet(`/products/user`);
-
-  return res;
+  return await securedGet(`/products/user`);
 };
 
 export const updateProduct = async (
   productId: string,
   productData: Partial<CreateProductDTO>
 ) => {
-  const res = await securedPost(`/products/update/${productId}`, productData);
-  return res;
+  return await securedPost(`/products/update/${productId}`, productData);
 };
 
 export const deleteProduct = async (productId: string) => {
-  const res = await securedPost(`/products/delete/${productId}`, {});
-  return res;
+  return await securedPost(`/products/delete/${productId}`, {});
 };
 
 export const getProductById = async (productId: string) => {
-  const res = await get(`/products/i/${productId}`);
-  return res;
+  return await get(`/products/i/${productId}`);
 };
 
 export const getProductBySlug = async (slug: string) => {
-  const res = await get(`/products/slug/${slug}`);
-  return res;
+  return await get(`/products/slug/${slug}`);
 };
 
 export const searchProducts = async (params: ProductSearchParamsInterface) => {
-  // const searchParams = new URLSearchParams();
-  // Object.entries(params).forEach(([key, value]) => {
-  //   if (value !== undefined) {
-  //     searchParams.append(key, value.toString());
-  //   }
-  // });
-  const res = await get(`/products/s?${params}`);
-  // console.log removed
-  return res;
+  // Build a proper query string from the params object
+  const searchParams = new URLSearchParams();
+  Object.entries(params as Record<string, unknown>).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.append(key, String(value));
+    }
+  });
+  return await get(`/products/s?${searchParams.toString()}`);
 };

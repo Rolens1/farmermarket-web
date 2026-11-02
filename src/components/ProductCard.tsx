@@ -1,7 +1,19 @@
-// import { MapPin } from "lucide-react";
 import { Button } from "./ui/button";
 import { ImageWithFallback } from "./helper/ImageWithFallback";
 import { Product } from "@/app/api/product/dto/create-product.dto";
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  vegetables: "🥕",
+  fruits: "🍓",
+  dairy: "🧀",
+  meat: "🥩",
+  honey: "🍯",
+  flowers: "🌸",
+};
+
+function formatPrice(price: number | string): string {
+  return `$${Number(price).toFixed(2)}`;
+}
 
 export function ProductCard({
   product,
@@ -19,16 +31,24 @@ export function ProductCard({
     : product.image
     ? [product.image]
     : [];
-  const mainImage = images[0] || "/placeholder.png";
   const secondaryImages = images.slice(1);
+  const categoryKey = (product.category ?? "").toLowerCase();
+  const categoryEmoji = CATEGORY_EMOJI[categoryKey];
+
   return (
     <div className="bg-card rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border group cursor-pointer flex flex-col h-full">
-      <div className="aspect-[4/3] overflow-hidden" onClick={onClick}>
+      <div className="aspect-[4/3] overflow-hidden relative" onClick={onClick}>
         <ImageWithFallback
           src={images?.[0] || "/placeholder.png"}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
+        {product.category && (
+          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full text-foreground shadow-sm">
+            {categoryEmoji ? `${categoryEmoji} ` : ""}
+            {product.category}
+          </span>
+        )}
       </div>
       {secondaryImages.length > 0 && (
         <div className="flex gap-2 px-5 pt-2">
@@ -47,18 +67,15 @@ export function ProductCard({
           <h3 className="text-foreground text-base sm:text-lg font-semibold line-clamp-2">
             {product.name}
           </h3>
-          <span className="text-primary text-sm sm:text-base">
-            {product.price}
+          <span className="text-primary text-sm sm:text-base font-semibold whitespace-nowrap ml-2">
+            {formatPrice(product.price)}
           </span>
         </div>
         <div className="flex items-center gap-1 text-muted-foreground mb-4">
-          {/* Optionally show seller and distance if available */}
+          {/* Seller and distance shown when available */}
         </div>
-        <Button className="w-full rounded-full bg-primary hover:bg-primary/90 text-xs sm:text-base py-2 sm:py-3">
-          Reserve
-        </Button>
         <Button
-          className="w-full rounded-full bg-primary hover:bg-primary/90 mt-2 text-xs sm:text-base py-2 sm:py-3"
+          className="w-full rounded-full bg-primary hover:bg-primary/90 mt-auto text-xs sm:text-base py-2 sm:py-3"
           onClick={(e) => {
             e.stopPropagation();
             if (onAddToCart) onAddToCart(product);

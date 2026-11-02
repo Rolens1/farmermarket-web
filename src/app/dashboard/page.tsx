@@ -138,7 +138,7 @@ export default function DashboardPage() {
     } else {
       // Create new listing
       const newListing = {
-        id: Math.max(...currentListings.map((l) => l.id)) + 1,
+        id: currentListings.length > 0 ? Math.max(...currentListings.map((l) => l.id)) + 1 : Date.now(),
         name: listingData.name ?? "",
         category: listingData.category ?? "",
         description: listingData.description ?? "",
@@ -177,13 +177,13 @@ export default function DashboardPage() {
     setDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (listingToDelete) {
       setCurrentListings((prev) =>
         prev.filter((item) => item.id !== listingToDelete.id)
       );
       toast.success("Listing deleted successfully");
-      deleteProduct(listingToDelete.id as unknown as string);
+      await deleteProduct(String(listingToDelete.id));
       setDeleteDialogOpen(false);
       setListingToDelete(null);
     }
