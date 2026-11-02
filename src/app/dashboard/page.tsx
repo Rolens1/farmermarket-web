@@ -106,26 +106,42 @@ export default function DashboardPage() {
   };
 
   const [currentListings, setCurrentListings] = useState<Listing[]>([]);
+  const safeListings = Array.isArray(currentListings) ? currentListings : [];
 
   useEffect(() => {
     const fetchListings = async () => {
       try {
+        const accessToken =
+          typeof window !== "undefined"
+            ? localStorage.getItem("accessToken")
+            : null;
+        if (!accessToken) {
+          router.push("/login");
+          return;
+        }
+
         const response = await getUserProducts();
-        // console.log removed
-        setCurrentListings(response);
+        if (Array.isArray(response)) {
+          setCurrentListings(response);
+        } else if (response && Array.isArray((response as any).products)) {
+          setCurrentListings((response as any).products);
+        } else {
+          setCurrentListings([]);
+        }
       } catch (error) {
-        // console.error removed
+        console.error("Failed to load user listings:", error);
+        setCurrentListings([]);
       }
     };
 
     fetchListings();
-  }, []);
+  }, [router]);
 
   const handleSaveListing = (listingData: Partial<Listing>) => {
     if (listingData.id) {
       // Update existing listing
       setCurrentListings((prev) =>
-        prev.map((item) =>
+        (Array.isArray(prev) ? prev : []).map((item) =>
           item.id === listingData.id
             ? {
                 ...item,
@@ -138,7 +154,10 @@ export default function DashboardPage() {
     } else {
       // Create new listing
       const newListing = {
-        id: currentListings.length > 0 ? Math.max(...currentListings.map((l) => l.id)) + 1 : Date.now(),
+        id:
+          safeListings.length > 0
+            ? Math.max(...safeListings.map((l) => Number(l.id) || 0)) + 1
+            : Date.now(),
         name: listingData.name ?? "",
         category: listingData.category ?? "",
         description: listingData.description ?? "",
@@ -151,7 +170,7 @@ export default function DashboardPage() {
         revenue: "$0.00",
         updated_at: listingData.updated_at ?? "",
       };
-      setCurrentListings((prev) => [...prev, newListing]);
+      setCurrentListings((prev) => [...(Array.isArray(prev) ? prev : []), newListing]);
     }
   };
 
@@ -180,7 +199,7 @@ export default function DashboardPage() {
   const handleConfirmDelete = async () => {
     if (listingToDelete) {
       setCurrentListings((prev) =>
-        prev.filter((item) => item.id !== listingToDelete.id)
+        (Array.isArray(prev) ? prev : []).filter((item) => item.id !== listingToDelete.id)
       );
       toast.success("Listing deleted successfully");
       await deleteProduct(String(listingToDelete.id));
@@ -327,7 +346,7 @@ export default function DashboardPage() {
               <List className="w-5 h-5" />
               <span className="font-medium text-sm">My Listings</span>
               <Badge className="ml-auto bg-slate-100 text-slate-700 border-0">
-                {currentListings.length}
+                {safeListings.length}
               </Badge>
             </button>
 
@@ -795,11 +814,21 @@ export default function DashboardPage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {currentListings.map((listing) => (
-                            <TableRow
-                              key={listing.id}
-                              className="border-slate-200 hover:bg-slate-50 text-xs sm:text-sm"
-                            >
+                          {safeListings.length === 0 ? (
+                            <TableRow>
+                              <TableCell
+                                colSpan={9}
+                                className="text-center py-8 text-slate-500"
+                              >
+                                No listings yet. Click &quot;New Listing&quot; to create one.
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            safeListings.map((listing) => (
+                              <TableRow
+                                key={listing.id}
+                                className="border-slate-200 hover:bg-slate-50 text-xs sm:text-sm"
+                              >
                               <TableCell className="font-medium text-slate-900 whitespace-nowrap">
                                 {listing.name}
                               </TableCell>
@@ -879,14 +908,19 @@ export default function DashboardPage() {
                                 </DropdownMenu>
                               </TableCell>
                             </TableRow>
-                          ))}
+                          )))}
                         </TableBody>
                       </Table>
                     </div>
 
                     {/* Mobile Card View */}
                     <div className="sm:hidden p-2 space-y-4">
-                      {currentListings.map((listing) => (
+                      {safeListings.length === 0 ? (
+                        <div className="text-center py-6 text-slate-500 text-sm">
+                          No listings yet. Click &quot;New Listing&quot; to create one.
+                        </div>
+                      ) : (
+                        safeListings.map((listing) => (
                         <div
                           key={listing.id}
                           className="border rounded-lg p-4 flex flex-col gap-2 bg-slate-50"
@@ -976,7 +1010,7 @@ export default function DashboardPage() {
                             </Button>
                           </div>
                         </div>
-                      ))}
+                      )))}
                     </div>
                   </div>
                 </TabsContent>
