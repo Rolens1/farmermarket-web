@@ -15,28 +15,49 @@ import {
   Printer,
   Sparkles,
   ShoppingBag,
-  Leaf,
+  Tag,
+  Check,
   X,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface CompletedOrderData {
   orderId: string;
   date: string;
   items: any[];
+  subtotal: number;
+  discountAmount: number;
+  promoCode?: string;
   totalPrice: number;
   itemCount: number;
   customerEmail: string;
   cardholderName: string;
 }
 
+const PROMO_CODES: Record<string, { label: string; type: "percent" | "fixed"; value: number }> = {
+  HARVEST10: { label: "10% Off Entire Harvest", type: "percent", value: 10 },
+  FRESH5: { label: "$5.00 Off Farm Box", type: "fixed", value: 5.0 },
+  LOCALFARM: { label: "$3.00 Community Farm Discount", type: "fixed", value: 3.0 },
+};
+
 export default function CartPage() {
-  const { cart, updateQuantity, removeFromCart, clearCart, loading } =
+  const { cart, updateQuantity, removeFromCart, addToCart, clearCart, loading } =
     useCart();
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<CompletedOrderData | null>(null);
+
+  // Promo code state
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    label: string;
+    discount: number;
+  } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
 
   // Simulated Stripe form state
   const [customerEmail, setCustomerEmail] = useState("alex.johnson@example.com");
@@ -46,12 +67,60 @@ export default function CartPage() {
   const [cardCvc, setCardCvc] = useState("123");
   const [postalCode, setPostalCode] = useState("H2X 1Y6");
 
+  // Calculate discount and final price
+  const discountAmount = appliedPromo ? appliedPromo.discount : 0;
+  const finalPrice = Math.max(0, cart.totalPrice - discountAmount);
+
+  // Handle Promo Code application
+  const handleApplyPromo = () => {
+    setPromoError(null);
+    const cleaned = promoInput.trim().toUpperCase();
+    if (!cleaned) return;
+
+    if (PROMO_CODES[cleaned]) {
+      const promo = PROMO_CODES[cleaned];
+      const discount =
+        promo.type === "percent"
+          ? (cart.totalPrice * promo.value) / 100
+          : Math.min(promo.value, cart.totalPrice);
+
+      setAppliedPromo({
+        code: cleaned,
+        label: promo.label,
+        discount: Number(discount.toFixed(2)),
+      });
+      setPromoInput("");
+      toast.success(`Promo code ${cleaned} applied successfully!`);
+    } else {
+      setPromoError("Invalid code. Try HARVEST10, FRESH5, or LOCALFARM");
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoError(null);
+  };
+
+  // Handle Remove Item with Undo Toast
+  const handleRemoveWithUndo = (item: any) => {
+    removeFromCart(item.product_id);
+    toast(`Removed ${item.product?.name || "produce"} from cart`, {
+      action: {
+        label: "Undo",
+        onClick: () => {
+          addToCart(item.product_id, item.product, item.quantity);
+          toast.success(`Restored ${item.product?.name || "produce"} to cart`);
+        },
+      },
+      duration: 5000,
+    });
+  };
+
   // Handle Checkout submission
   const handleStripePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate 1.6s Stripe API charge & webhook confirmation
     setTimeout(() => {
       const orderData: CompletedOrderData = {
         orderId: `#FM-${Math.floor(10000 + Math.random() * 90000)}`,
@@ -63,7 +132,10 @@ export default function CartPage() {
           minute: "2-digit",
         }),
         items: [...cart.items],
-        totalPrice: cart.totalPrice,
+        subtotal: cart.totalPrice,
+        discountAmount,
+        promoCode: appliedPromo?.code,
+        totalPrice: finalPrice,
         itemCount: cart.itemCount,
         customerEmail,
         cardholderName,
@@ -73,6 +145,7 @@ export default function CartPage() {
       clearCart();
       setIsProcessing(false);
       setCheckoutOpen(false);
+      setAppliedPromo(null);
     }, 1600);
   };
 
@@ -166,8 +239,17 @@ export default function CartPage() {
       <table class="total-table">
         <tr>
           <td>Subtotal:</td>
-          <td style="text-align: right;">$${order.totalPrice.toFixed(2)}</td>
+          <td style="text-align: right;">$${order.subtotal.toFixed(2)}</td>
         </tr>
+        ${
+          order.discountAmount > 0
+            ? `
+        <tr style="color: #16a34a;">
+          <td>Discount (${order.promoCode}):</td>
+          <td style="text-align: right;">-$${order.discountAmount.toFixed(2)}</td>
+        </tr>`
+            : ""
+        }
         <tr>
           <td>Estimated Tax:</td>
           <td style="text-align: right;">$0.00 (Farm Exempt)</td>
@@ -207,7 +289,6 @@ export default function CartPage() {
     return (
       <div className="container mx-auto px-4 py-12 max-w-2xl">
         <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-lg text-center">
-          {/* Animated Green Badge */}
           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
             <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
           </div>
@@ -225,7 +306,6 @@ export default function CartPage() {
             <span className="font-semibold text-slate-700">{completedOrder.customerEmail}</span>.
           </p>
 
-          {/* Order Details Card */}
           <div className="bg-slate-50 rounded-2xl p-4 sm:p-6 text-left mb-6 border border-slate-200/80">
             <div className="flex justify-between items-center pb-3 border-b border-slate-200 text-xs sm:text-sm">
               <span className="text-slate-500">Order Reference</span>
@@ -242,6 +322,12 @@ export default function CartPage() {
                 Visa •••• 4242
               </span>
             </div>
+            {completedOrder.discountAmount > 0 && (
+              <div className="flex justify-between items-center py-2.5 border-b border-slate-200 text-xs sm:text-sm text-emerald-700 font-medium">
+                <span>Voucher Applied ({completedOrder.promoCode})</span>
+                <span>-${completedOrder.discountAmount.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center py-2.5 border-b border-slate-200 text-xs sm:text-sm">
               <span className="text-slate-500">Fulfillment</span>
               <span className="font-semibold text-emerald-700">
@@ -254,7 +340,6 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               onClick={() => handleDownloadInvoice(completedOrder)}
@@ -288,11 +373,13 @@ export default function CartPage() {
   if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
-          <ShoppingBag className="w-8 h-8" />
+        <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-emerald-100 shadow-xs">
+          <ShoppingBag className="w-10 h-10" />
         </div>
-        <h1 className="text-2xl font-bold mb-2 text-slate-900">Your Cart is Empty</h1>
-        <p className="text-slate-500 mb-6">Discover fresh harvest produce from local producers.</p>
+        <h1 className="text-2xl font-bold mb-2 text-slate-900">Your Basket is Empty</h1>
+        <p className="text-slate-500 max-w-sm mx-auto mb-6 text-sm">
+          Fresh morning harvests from local orchards and sustainable farms are waiting for you.
+        </p>
         <Link
           href="/browse"
           className="inline-flex items-center justify-center bg-primary text-white font-semibold px-6 py-2.5 rounded-full hover:bg-primary/90 transition-colors shadow-sm"
@@ -374,7 +461,7 @@ export default function CartPage() {
                   </button>
                 </div>
                 <button
-                  onClick={() => removeFromCart(item.product_id)}
+                  onClick={() => handleRemoveWithUndo(item)}
                   disabled={loading}
                   className="text-slate-400 hover:text-rose-600 ml-0 sm:ml-2 mt-2 sm:mt-0 text-xs sm:text-sm font-medium transition-colors"
                 >
@@ -399,6 +486,12 @@ export default function CartPage() {
               <span>Local Farm Pickup:</span>
               <span className="font-semibold text-emerald-600">FREE</span>
             </div>
+            {appliedPromo && (
+              <div className="flex justify-between text-emerald-700 font-semibold">
+                <span>Voucher ({appliedPromo.code}):</span>
+                <span>-${appliedPromo.discount.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Estimated Tax:</span>
               <span className="text-slate-500">$0.00 (Exempt)</span>
@@ -407,7 +500,7 @@ export default function CartPage() {
 
           <div className="flex justify-between font-extrabold text-lg sm:text-xl mb-6 text-slate-900">
             <span>Total:</span>
-            <span className="text-emerald-700">${cart.totalPrice.toFixed(2)}</span>
+            <span className="text-emerald-700">${finalPrice.toFixed(2)}</span>
           </div>
 
           <button
@@ -420,7 +513,7 @@ export default function CartPage() {
 
           <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>Simulated Stripe Sandbox • No real charge</span>
+            <span>Simulated Stripe Sandbox • Promo Codes Ready</span>
           </div>
         </div>
       </div>
@@ -444,7 +537,7 @@ export default function CartPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-              {/* Left Column: Order Summary */}
+              {/* Left Column: Order Summary & Item List */}
               <div className="p-6 bg-slate-50/70 flex flex-col justify-between">
                 <div>
                   <button
@@ -466,11 +559,11 @@ export default function CartPage() {
 
                   <p className="text-xs text-slate-500 mb-1">Pay Farmers Market</p>
                   <p className="text-3xl font-extrabold text-slate-900 mb-6">
-                    ${cart.totalPrice.toFixed(2)}
+                    ${finalPrice.toFixed(2)}
                   </p>
 
                   {/* Itemized Mini List */}
-                  <div className="space-y-3 max-h-52 overflow-y-auto pr-2">
+                  <div className="space-y-3 max-h-44 overflow-y-auto pr-2">
                     {cart.items.map((item, idx) => (
                       <div key={idx} className="flex justify-between items-center text-xs">
                         <div className="flex items-center gap-2">
@@ -489,25 +582,31 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 mt-6 text-xs text-slate-500 space-y-1">
+                <div className="pt-4 border-t border-slate-200 mt-6 text-xs text-slate-500 space-y-1.5">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
                     <span>${cart.totalPrice.toFixed(2)}</span>
                   </div>
+                  {appliedPromo && (
+                    <div className="flex justify-between text-emerald-700 font-semibold">
+                      <span>Discount ({appliedPromo.code}):</span>
+                      <span>-${appliedPromo.discount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span>Pickup / Fulfillment:</span>
                     <span className="text-emerald-700 font-medium">Free</span>
                   </div>
                   <div className="flex justify-between font-bold text-slate-900 pt-2 border-t border-slate-200 text-sm">
                     <span>Total due today:</span>
-                    <span className="text-emerald-700">${cart.totalPrice.toFixed(2)}</span>
+                    <span className="text-emerald-700">${finalPrice.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Stripe Card Form */}
+              {/* Right Column: Stripe Card Form & Promo Code Input */}
               <div className="p-6 sm:p-8">
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-base">
                     Pay with Card
                   </h3>
@@ -524,7 +623,54 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <form onSubmit={handleStripePayment} className="space-y-4">
+                {/* Promo Code Input at Checkout */}
+                <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                      <Tag className="w-3.5 h-3.5 text-primary" />
+                      Promo Code or Market Voucher
+                    </label>
+                  </div>
+                  {appliedPromo ? (
+                    <div className="flex items-center justify-between bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200 text-xs">
+                      <span className="font-bold flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        {appliedPromo.code} (-${appliedPromo.discount.toFixed(2)})
+                      </span>
+                      <button
+                        onClick={handleRemovePromo}
+                        className="text-xs text-emerald-700 hover:text-emerald-900 underline font-medium"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={promoInput}
+                        onChange={(e) => setPromoInput(e.target.value)}
+                        placeholder="e.g. HARVEST10, FRESH5"
+                        className="flex-1 text-xs px-3 py-2 rounded-lg border border-slate-300 uppercase focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyPromo}
+                        className="px-3 py-2 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-lg transition-colors"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  )}
+                  {promoError && (
+                    <p className="text-[11px] text-rose-600 mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {promoError}
+                    </p>
+                  )}
+                </div>
+
+                <form onSubmit={handleStripePayment} className="space-y-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Email
@@ -534,7 +680,7 @@ export default function CartPage() {
                       required
                       value={customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
-                      className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                      className="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
                       placeholder="you@example.com"
                     />
                   </div>
@@ -544,7 +690,7 @@ export default function CartPage() {
                       Card Information
                     </label>
                     <div className="rounded-lg border border-slate-300 overflow-hidden divide-y divide-slate-200 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary">
-                      <div className="flex items-center px-3 py-2.5 bg-white">
+                      <div className="flex items-center px-3 py-2 bg-white">
                         <CreditCard className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
                         <input
                           type="text"
@@ -561,7 +707,7 @@ export default function CartPage() {
                           required
                           value={cardExpiry}
                           onChange={(e) => setCardExpiry(e.target.value)}
-                          className="px-3 py-2 text-xs outline-none bg-transparent"
+                          className="px-3 py-1.5 text-xs outline-none bg-transparent"
                           placeholder="MM / YY"
                         />
                         <input
@@ -569,7 +715,7 @@ export default function CartPage() {
                           required
                           value={cardCvc}
                           onChange={(e) => setCardCvc(e.target.value)}
-                          className="px-3 py-2 text-xs outline-none bg-transparent"
+                          className="px-3 py-1.5 text-xs outline-none bg-transparent"
                           placeholder="CVC"
                         />
                       </div>
@@ -585,7 +731,7 @@ export default function CartPage() {
                       required
                       value={cardholderName}
                       onChange={(e) => setCardholderName(e.target.value)}
-                      className="w-full text-xs px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                      className="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
                       placeholder="Jane Doe"
                     />
                   </div>
@@ -595,7 +741,7 @@ export default function CartPage() {
                       Country or Region
                     </label>
                     <div className="rounded-lg border border-slate-300 overflow-hidden divide-y divide-slate-200">
-                      <select className="w-full text-xs px-3 py-2.5 bg-white outline-none text-slate-800">
+                      <select className="w-full text-xs px-3 py-2 bg-white outline-none text-slate-800">
                         <option value="CA">Canada</option>
                         <option value="US">United States</option>
                       </select>
@@ -604,7 +750,7 @@ export default function CartPage() {
                         required
                         value={postalCode}
                         onChange={(e) => setPostalCode(e.target.value)}
-                        className="w-full px-3 py-2 text-xs outline-none bg-white"
+                        className="w-full px-3 py-1.5 text-xs outline-none bg-white"
                         placeholder="Postal Code"
                       />
                     </div>
@@ -613,7 +759,7 @@ export default function CartPage() {
                   <button
                     type="submit"
                     disabled={isProcessing}
-                    className="w-full bg-[#635BFF] hover:bg-[#534be0] text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70 mt-5"
+                    className="w-full bg-[#635BFF] hover:bg-[#534be0] text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70 mt-4"
                   >
                     {isProcessing ? (
                       <>
@@ -623,12 +769,12 @@ export default function CartPage() {
                     ) : (
                       <>
                         <Lock className="w-4 h-4" />
-                        <span>Pay ${cart.totalPrice.toFixed(2)}</span>
+                        <span>Pay ${finalPrice.toFixed(2)}</span>
                       </>
                     )}
                   </button>
 
-                  <p className="text-[11px] text-center text-slate-400 mt-3 flex items-center justify-center gap-1">
+                  <p className="text-[11px] text-center text-slate-400 mt-2 flex items-center justify-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
                     Encrypted via Stripe 256-bit SSL protocol
                   </p>

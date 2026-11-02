@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback, useRef, useMemo, Suspense } from "react";
 import { Product } from "../api/product/dto/create-product.dto";
@@ -216,25 +218,14 @@ function BrowsePageInner() {
 
             {/* Loading Skeletons */}
             {loading ? (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-card rounded-3xl overflow-hidden shadow-sm border border-border animate-pulse"
-                  >
-                    <div className="aspect-[4/3] bg-muted" />
-                    <div className="p-5 space-y-3">
-                      <div className="h-6 bg-muted rounded w-2/3" />
-                      <div className="h-4 bg-muted rounded w-1/3" />
-                      <div className="h-4 bg-muted rounded w-1/2" />
-                      <div className="h-10 bg-muted rounded w-full mt-4" />
-                    </div>
-                  </div>
+                  <ProductCardSkeleton key={i} />
                 ))}
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   {sortedProducts.map((product, index) => (
                     <ProductCard
                       key={index}
@@ -247,10 +238,15 @@ function BrowsePageInner() {
                 </div>
 
                 {sortedProducts.length === 0 && (
-                  <div className="text-center py-20 text-muted-foreground">
-                    <p className="text-lg">No products found</p>
-                    <p className="text-sm mt-2">Try adjusting your filters or search query</p>
-                  </div>
+                  <EmptyState
+                    title="No Fresh Produce Found"
+                    description="We couldn't find any produce matching your current search or filters. Try resetting your filters to see what's in season!"
+                    actionText="Reset All Filters"
+                    onAction={() => {
+                      setFilters(defaultFilters);
+                      setSearchQuery("");
+                    }}
+                  />
                 )}
               </>
             )}

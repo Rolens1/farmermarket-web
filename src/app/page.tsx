@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ImageWithFallback } from "@/components/helper/ImageWithFallback";
 import { CategoryCard } from "@/components/CategoryCard";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { getProducts } from "./api/product/products";
@@ -22,6 +23,7 @@ export default function Home() {
     { icon: Flower, label: "Flowers" },
   ];
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const [loadingRecent, setLoadingRecent] = useState<boolean>(true);
   const { addToCart, loading: cartLoading } = useCart();
 
   useEffect(() => {
@@ -32,6 +34,8 @@ export default function Home() {
         setRecentProducts(products);
       } catch {
         setRecentProducts([]);
+      } finally {
+        setLoadingRecent(false);
       }
     };
     fetchRecent();
@@ -113,19 +117,23 @@ export default function Home() {
           </button>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          {recentProducts.map((product) => (
-            <ProductCard
-              key={product.slug || product.id || product.name}
-              product={product}
-              onClick={() =>
-                router.push(
-                  `/product/${product.slug || product.id || product.name}`
-                )
-              }
-              onAddToCart={() => addToCart(product.slug || product.id, product)}
-              loading={cartLoading}
-            />
-          ))}
+          {loadingRecent
+            ? [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
+            : recentProducts.map((product) => (
+                <ProductCard
+                  key={product.slug || product.id || product.name}
+                  product={product}
+                  onClick={() =>
+                    router.push(
+                      `/product/${product.slug || product.id || product.name}`
+                    )
+                  }
+                  onAddToCart={() =>
+                    addToCart(product.slug || product.id, product)
+                  }
+                  loading={cartLoading}
+                />
+              ))}
         </div>
       </section>
     </main>
