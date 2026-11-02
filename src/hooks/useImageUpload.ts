@@ -1,20 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@insforge/sdk";
 
-// Singleton Supabase client for storage only — auth persistence disabled to avoid LockManager errors
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  }
-);
+const insforge = createClient({
+  baseUrl:
+    process.env.NEXT_PUBLIC_INSFORGE_URL ??
+    process.env.NEXT_PUBLIC_SUPABASE_URL ??
+    "https://pprn26i7.us-east.insforge.app",
+  anonKey:
+    process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    "anon_d05d2e2d6987608e7786bd21c23125abd753514256ca0b2d4577447612f4e7db",
+});
 
 export function useImageUpload() {
   const [uploading, setUploading] = useState(false);
@@ -25,7 +24,6 @@ export function useImageUpload() {
     setError(null);
 
     try {
-      // Validate file type and size
       if (!file.type.startsWith("image/")) {
         throw new Error("Please upload an image file (JPEG, PNG, etc.)");
       }
@@ -33,25 +31,26 @@ export function useImageUpload() {
         throw new Error("File size must be less than 5MB");
       }
 
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      if (token && (insforge as any).tokenManager) {
+        (insforge as any).tokenManager.setAccessToken(token);
+      }
+
       const fileExt = file.name.split(".").pop() || "jpg";
       const fileName = `${userId}/${crypto.randomUUID()}.${fileExt}`;
 
-      const { data, error } = await supabase.storage
+      const { data, error } = await insforge.storage
         .from("products")
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
+        .upload(fileName, file);
 
       if (error) {
         throw new Error(`Upload failed: ${error.message}`);
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from("products")
-        .getPublicUrl(data.path);
-
-      return publicUrlData.publicUrl;
+      return data?.url || "";
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -66,20 +65,24 @@ export function useImageUpload() {
 
   const deleteImage = async (imageUrl: string): Promise<void> => {
     try {
-      // Extract path from URL: last two segments = "userId/filename.jpg"
       const urlParts = imageUrl.split("/");
       const path = urlParts.slice(-2).join("/");
 
-      const { error } = await supabase.storage.from("products").remove([path]);
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      if (token && (insforge as any).tokenManager) {
+        (insforge as any).tokenManager.setAccessToken(token);
+      }
 
+      const { error } = await insforge.storage.from("products").remove(path);
       if (error) {
         throw new Error(`Delete failed: ${error.message}`);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
-      } else {
-        setError("An unknown error occurred");
       }
       throw err;
     }

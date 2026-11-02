@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@insforge/sdk": "^1.5.2",
     "@supabase/supabase-js": "^2.76.1",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^0.545.0",
