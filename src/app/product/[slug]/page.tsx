@@ -7,8 +7,10 @@ import { ImageWithFallback } from "@/components/helper/ImageWithFallback";
 import { ProductCard } from "@/components/ProductCard";
 import { useRouter } from "next/navigation";
 import { getProductBySlug } from "@/app/api/product/products";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Product } from "@/app/api/product/dto/create-product.dto";
+import { useCart } from "@/context/CartContext";
+import { MOCK_PRODUCTS } from "@/data/mockProducts";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -19,6 +21,7 @@ export default function ProductPage({ params }: PageProps) {
   const [mainImage, setMainImage] = useState<string>("/default-product.jpg");
   const [slug, setSlug] = useState<string>("");
   const router = useRouter();
+  const { addToCart, loading: cartLoading } = useCart();
 
   // Unwrap the params promise
   useEffect(() => {
@@ -92,32 +95,23 @@ export default function ProductPage({ params }: PageProps) {
       : [product.image]
     : thumbnails;
 
-  const relatedProducts = [
-    {
-      image:
-        "https://images.unsplash.com/photo-1604337214275-86010944959d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcmdhbmljJTIwdmVnZXRhYmxlcyUyMGNvbG9yZnVsfGVufDF8fHx8MTc1OTgwODM0MXww&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Mixed Vegetables",
-      price: "$6.50/lb",
-      seller: "Harvest Hills",
-      distance: "3.1 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1603403887668-a23fbcd4d8be?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZydWl0cyUyMGJhc2tldHxlbnwxfHx8fDE3NTk4MDgzNDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Fresh Fruit Basket",
-      price: "$12.99",
-      seller: "Orchard Delight",
-      distance: "4.5 mi",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1655169947079-5b2a38815147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob25leSUyMGphciUyMG5hdHVyYWx8ZW58MXx8fHwxNzU5NzYzMDI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      name: "Raw Wildflower Honey",
-      price: "$8.99/jar",
-      seller: "Bee Happy Farm",
-      distance: "5.2 mi",
-    },
-  ];
+  // Dynamically select related products from the same category
+  const relatedProducts = useMemo(() => {
+    const list = MOCK_PRODUCTS.filter(
+      (p) =>
+        p.slug !== slug &&
+        String(p.id) !== slug &&
+        (!product?.category ||
+          (p.category ?? "").toLowerCase() ===
+            (product.category ?? "").toLowerCase())
+    );
+    if (list.length >= 3) return list.slice(0, 3);
+    // If fewer than 3 in same category, supplement with top products
+    const otherProducts = MOCK_PRODUCTS.filter(
+      (p) => p.slug !== slug && !list.some((l) => l.slug === p.slug)
+    );
+    return [...list, ...otherProducts].slice(0, 3);
+  }, [product, slug]);
   const reviews = [
     {
       name: "Sarah Johnson",
@@ -312,8 +306,20 @@ export default function ProductPage({ params }: PageProps) {
           <div>
             <h2 className="text-foreground mb-4 sm:mb-8 text-lg sm:text-xl">Related Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {relatedProducts.map((product, index) => (
-                <ProductCard key={index} product={product as any} />
+              {relatedProducts.map((relProduct) => (
+                <ProductCard
+                  key={relProduct.slug || relProduct.id}
+                  product={relProduct as any}
+                  onClick={() =>
+                    router.push(
+                      `/product/${relProduct.slug || relProduct.id}`
+                    )
+                  }
+                  onAddToCart={() =>
+                    addToCart(relProduct.slug || relProduct.id, relProduct as any)
+                  }
+                  loading={cartLoading}
+                />
               ))}
             </div>
           </div>
