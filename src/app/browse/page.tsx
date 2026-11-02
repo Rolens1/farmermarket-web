@@ -15,8 +15,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback, useRef, useMemo, Suspense } from "react";
 import { Product } from "../api/product/dto/create-product.dto";
-import { get } from "../api/fetch.api";
-import { searchProducts } from "../api/product/products";
+import { getProducts, searchProducts } from "../api/product/products";
 import { ProductSearchParamsInterface } from "../api/product/dto/product-search.dto";
 import { useCart } from "@/context/CartContext";
 
@@ -87,7 +86,7 @@ function BrowsePageInner() {
     );
     let productsData;
     if (Object.keys(cleaned).length === 0) {
-      productsData = await get("/products");
+      productsData = await getProducts();
     } else {
       productsData = await searchProducts(cleaned as ProductSearchParamsInterface);
     }

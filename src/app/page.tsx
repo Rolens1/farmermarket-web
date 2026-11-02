@@ -9,7 +9,7 @@ import { CategoryCard } from "@/components/CategoryCard";
 import { ProductCard } from "@/components/ProductCard";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
-import { get } from "./api/fetch.api";
+import { getProducts } from "./api/product/products";
 
 export default function Home() {
   const router = useRouter();
@@ -27,8 +27,8 @@ export default function Home() {
   useEffect(() => {
     const fetchRecent = async () => {
       try {
-        const res = await get("/products/s?take=4&sort=created_at:desc");
-        const products = (res && res.products ? res.products : []).slice(0, 4);
+        const res = await getProducts();
+        const products = (Array.isArray(res) ? res : []).slice(0, 8);
         setRecentProducts(products);
       } catch {
         setRecentProducts([]);

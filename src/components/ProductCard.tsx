@@ -1,6 +1,7 @@
 import { Button } from "./ui/button";
 import { ImageWithFallback } from "./helper/ImageWithFallback";
 import { Product } from "@/app/api/product/dto/create-product.dto";
+import { MapPin } from "lucide-react";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   vegetables: "🥕",
@@ -71,8 +72,12 @@ export function ProductCard({
             {formatPrice(product.price)}
           </span>
         </div>
-        <div className="flex items-center gap-1 text-muted-foreground mb-4">
-          {/* Seller and distance shown when available */}
+        <div className="flex items-center gap-1 text-muted-foreground text-xs mb-3 truncate">
+          <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span className="truncate">
+            {(product as any).distance ? `${(product as any).distance} mi • ` : ""}
+            {(product as any).farmName || "Local Farmstead"}
+          </span>
         </div>
         <Button
           className="w-full rounded-full bg-primary hover:bg-primary/90 mt-auto text-xs sm:text-base py-2 sm:py-3"

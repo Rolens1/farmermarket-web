@@ -79,6 +79,7 @@ import {
 import { toast } from "sonner";
 import { signOut } from "../api/auth/login";
 import { deleteProduct, getUserProducts } from "../api/product/products";
+import { MOCK_STARTER_LISTINGS } from "@/data/mockDashboard";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("listings");
@@ -121,12 +122,13 @@ export default function DashboardPage() {
         }
 
         const response = await getUserProducts();
-        if (Array.isArray(response)) {
+        if (Array.isArray(response) && response.length > 0) {
           setCurrentListings(response);
-        } else if (response && Array.isArray((response as any).products)) {
+        } else if (response && Array.isArray((response as any).products) && (response as any).products.length > 0) {
           setCurrentListings((response as any).products);
         } else {
-          setCurrentListings([]);
+          // Provide rich mock starter listings so dashboard feels alive
+          setCurrentListings(MOCK_STARTER_LISTINGS as Listing[]);
         }
       } catch (error) {
         console.error("Failed to load user listings:", error);
@@ -319,7 +321,7 @@ export default function DashboardPage() {
             <button
               onClick={() => {
                 setSidebarOpen("dashboard");
-                setActiveTab("listings");
+                setActiveTab("overview");
               }}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
                 sidebarOpen === "dashboard"
@@ -329,6 +331,22 @@ export default function DashboardPage() {
             >
               <BarChart3 className="w-5 h-5" />
               <span className="font-medium text-sm">Dashboard</span>
+            </button>
+
+            {/** Analytics */}
+            <button
+              onClick={() => {
+                setSidebarOpen("analytics");
+                setActiveTab("analytics");
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors mt-1 ${
+                sidebarOpen === "analytics"
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <TrendingUp className="w-5 h-5" />
+              <span className="font-medium text-sm">Analytics</span>
             </button>
 
             {/** Listings */}
@@ -444,14 +462,12 @@ export default function DashboardPage() {
                 <TabsTrigger
                   value="overview"
                   className="data-[state=active]:bg-white"
-                  disabled
                 >
                   Overview
                 </TabsTrigger>
                 <TabsTrigger
                   value="analytics"
                   className="data-[state=active]:bg-white"
-                  disabled
                 >
                   Analytics
                 </TabsTrigger>
@@ -746,8 +762,7 @@ export default function DashboardPage() {
               </TabsContent>
 
               {/* Listings Tab */}
-              {activeTab === "listings" && (
-                <TabsContent value="listings" className="mt-6">
+              <TabsContent value="listings" className="mt-6">
                   <div className="bg-white rounded-xl border border-slate-200">
                     {/* Table Header */}
                     <div className="p-4 sm:p-6 border-b border-slate-200">
@@ -1014,7 +1029,6 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </TabsContent>
-              )}
             </Tabs>
           </div>
         </div>
