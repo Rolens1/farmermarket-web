@@ -58,14 +58,12 @@ export default function Home() {
               </p>
             </div>
             <SearchBar
-              onSearch={(query) => {
-                if (query && query.trim()) {
-                  router.push(
-                    `/browse?query=${encodeURIComponent(query.trim())}`
-                  );
-                } else {
-                  router.push("/browse");
-                }
+              onSearch={(query, location) => {
+                const params = new URLSearchParams();
+                if (query && query.trim()) params.set("query", query.trim());
+                if (location && location.trim()) params.set("location", location.trim());
+                const qs = params.toString();
+                router.push(`/browse${qs ? `?${qs}` : ""}`);
               }}
             />
           </div>

@@ -2,10 +2,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Leaf, ShoppingCart } from "lucide-react";
+import { Leaf, ShoppingCart, Heart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useFavorites } from "@/hooks/useFavorites";
 
 export function Navbar({
   currentPage,
@@ -16,6 +17,7 @@ export function Navbar({
 }) {
   const { user } = useAuth();
   const { cart } = useCart();
+  const { favorites } = useFavorites();
   const [isPopping, setIsPopping] = useState(false);
   const [popDiff, setPopDiff] = useState(1);
   const prevCount = useRef(cart.itemCount);
@@ -107,6 +109,26 @@ export function Navbar({
               Login
             </Link>
           )}
+
+          {/* Favorites Wishlist Link */}
+          <Link
+            href="/favorites"
+            className="relative ml-2 sm:ml-4 group flex items-center justify-center p-1"
+            aria-label="Wishlist Favorites"
+          >
+            <Heart
+              className={`w-6 h-6 transition-all duration-200 ${
+                favorites.length > 0
+                  ? "text-rose-500 fill-rose-500 hover:scale-110"
+                  : "text-foreground group-hover:text-rose-500"
+              }`}
+            />
+            {favorites.length > 0 && (
+              <span className="absolute -top-2 -right-2 text-xs rounded-full px-1.5 py-0.2 font-bold bg-rose-500 text-white border border-white">
+                {favorites.length}
+              </span>
+            )}
+          </Link>
 
           {/* Cart Icon with Pop Animation */}
           <Link

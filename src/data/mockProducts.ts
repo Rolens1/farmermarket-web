@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Product } from "@/app/api/product/dto/create-product.dto";
-import { MOCK_SELLERS, SellerProfile, getSellerForProductSlug } from "./mockSellers";
+import { MOCK_SELLERS, SellerProfile, getSellerForProductSlug, getSellerById } from "./mockSellers";
+import { calculateDistanceMiles } from "@/utils/location";
 
 export interface EnhancedProduct extends Product {
   farmName?: string;
@@ -10,6 +11,11 @@ export interface EnhancedProduct extends Product {
   sellerAvatar?: string;
   sellerBanner?: string;
   distance?: number; // miles
+  lat?: number;
+  lng?: number;
+  location?: string;
+  region?: string;
+  country?: "Canada" | "United States";
   rating?: number;
   reviewsCount?: number;
   pickupAvailable?: boolean;
@@ -903,10 +909,852 @@ export const MOCK_PRODUCTS: EnhancedProduct[] = [
     tags: ["Alpine Goats", "Hand-Ladled", "Fleur de Sel"],
     is_available: true,
   },
+
+  // ==========================================
+  // CANADA: ONTARIO
+  // ==========================================
+  {
+    id: "prod-201",
+    name: "Niagara Sun Ripened Sweet Yellow Peaches",
+    slug: "niagara-sweet-peaches",
+    category: "Fruits",
+    price: 4.99,
+    quantity: 60,
+    unit: "lb",
+    description: "Famous Niagara Escarpment freestone yellow peaches, luscious and dripping with sweet nectar. Harvested at peak ripeness.",
+    image: [
+      "https://images.unsplash.com/photo-1595124245030-41448b199d6d?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-9",
+    sellerName: "Niagara Heritage Peach & Vineyard",
+    sellerSlug: "niagara-heritage-peach-vineyard",
+    farmName: "Niagara Heritage Peach & Vineyard",
+    distance: 280,
+    lat: 43.2557,
+    lng: -79.0717,
+    location: "Niagara-on-the-Lake, ON",
+    region: "Ontario",
+    country: "Canada",
+    rating: 4.9,
+    reviewsCount: 88,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Yesterday",
+    tags: ["Niagara Escarpment", "Tree Ripened", "Juicy"],
+    is_available: true,
+  },
+  {
+    id: "prod-202",
+    name: "Ontario Sweet Concord Table Grapes",
+    slug: "ontario-concord-grapes",
+    category: "Fruits",
+    price: 5.49,
+    quantity: 45,
+    unit: "basket",
+    description: "Deep purple heritage Concord grapes bursting with nostalgic aromatic sweetness. Perfect for fresh eating or homemade jelly.",
+    image: [
+      "https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-9",
+    sellerName: "Niagara Heritage Peach & Vineyard",
+    sellerSlug: "niagara-heritage-peach-vineyard",
+    farmName: "Niagara Heritage Peach & Vineyard",
+    distance: 280,
+    lat: 43.2557,
+    lng: -79.0717,
+    location: "Niagara-on-the-Lake, ON",
+    region: "Ontario",
+    country: "Canada",
+    rating: 4.9,
+    reviewsCount: 42,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Two Days Ago",
+    tags: ["Concord", "Aromatic", "Ontario Grown"],
+    is_available: true,
+  },
+  {
+    id: "prod-203",
+    name: "Prince Edward County Wild Baby Arugula",
+    slug: "county-organic-arugula",
+    category: "Vegetables",
+    price: 3.29,
+    quantity: 50,
+    unit: "bag (150g)",
+    description: "Tender peppery baby arugula leaves grown in certified organic soil along Lake Ontario breezes. Triple washed and crisp.",
+    image: [
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-10",
+    sellerName: "Prince Edward County Organics",
+    sellerSlug: "prince-edward-county-organics",
+    farmName: "Prince Edward County Organics",
+    distance: 185,
+    lat: 43.9928,
+    lng: -77.1408,
+    location: "Picton, ON",
+    region: "Ontario",
+    country: "Canada",
+    rating: 5.0,
+    reviewsCount: 54,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "This Morning",
+    tags: ["Certified Organic", "Peppery", "Triple Washed"],
+    is_available: true,
+  },
+  {
+    id: "prod-204",
+    name: "Rainbow Greenhouse Cherry Tomatoes",
+    slug: "pec-cherry-tomatoes",
+    category: "Vegetables",
+    price: 4.29,
+    quantity: 65,
+    unit: "pint",
+    description: "Sweet candy like cherry tomatoes in yellow, orange, and deep red. Vine harvested in geothermal greenhouses in Prince Edward County.",
+    image: [
+      "https://images.unsplash.com/photo-1546470427-0d4db154ceb7?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-10",
+    sellerName: "Prince Edward County Organics",
+    sellerSlug: "prince-edward-county-organics",
+    farmName: "Prince Edward County Organics",
+    distance: 185,
+    lat: 43.9928,
+    lng: -77.1408,
+    location: "Picton, ON",
+    region: "Ontario",
+    country: "Canada",
+    rating: 5.0,
+    reviewsCount: 38,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Yesterday",
+    tags: ["Heirloom Cherry", "Boutique", "Candy Sweet"],
+    is_available: true,
+  },
+
+  // ==========================================
+  // CANADA: BRITISH COLUMBIA
+  // ==========================================
+  {
+    id: "prod-205",
+    name: "Okanagan Valley Dark Sweet Bing Cherries",
+    slug: "okanagan-bing-cherries",
+    category: "Fruits",
+    price: 6.99,
+    quantity: 80,
+    unit: "lb",
+    description: "Famous plump British Columbia dark cherries warmed by valley sunshine. Firm, crunchy, and intensely sweet.",
+    image: [
+      "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-11",
+    sellerName: "Okanagan Sun Orchards",
+    sellerSlug: "okanagan-sun-orchards",
+    farmName: "Okanagan Sun Orchards",
+    distance: 2280,
+    lat: 49.888,
+    lng: -119.496,
+    location: "Kelowna, BC",
+    region: "British Columbia",
+    country: "Canada",
+    rating: 4.9,
+    reviewsCount: 140,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Two Days Ago",
+    tags: ["Okanagan Cherries", "Mountain Grown", "Crunchy"],
+    is_available: true,
+  },
+  {
+    id: "prod-206",
+    name: "British Columbia Crisp Ambrosia Apples",
+    slug: "bc-ambrosia-apples",
+    category: "Fruits",
+    price: 3.79,
+    quantity: 90,
+    unit: "lb",
+    description: "Naturally discovered in the Similkameen Valley of BC. Fine grained honey aroma with non browning crisp flesh.",
+    image: [
+      "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-11",
+    sellerName: "Okanagan Sun Orchards",
+    sellerSlug: "okanagan-sun-orchards",
+    farmName: "Okanagan Sun Orchards",
+    distance: 2280,
+    lat: 49.888,
+    lng: -119.496,
+    location: "Kelowna, BC",
+    region: "British Columbia",
+    country: "Canada",
+    rating: 4.9,
+    reviewsCount: 76,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Fresh Harvest",
+    tags: ["Ambrosia", "BC Original", "Honey Aroma"],
+    is_available: true,
+  },
+  {
+    id: "prod-207",
+    name: "Fraser Valley Cultivated Jumbo Blueberries",
+    slug: "fraser-valley-blueberries",
+    category: "Fruits",
+    price: 4.99,
+    quantity: 70,
+    unit: "pint",
+    description: "Pacific coast blueberries grown in rich fertile river delta soils. Giant sweet berries with powdery silver blooms intact.",
+    image: [
+      "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-12",
+    sellerName: "Fraser Valley Berry Collective",
+    sellerSlug: "fraser-valley-berry-collective",
+    farmName: "Fraser Valley Berry Collective",
+    distance: 2260,
+    lat: 49.0546,
+    lng: -122.328,
+    location: "Abbotsford, BC",
+    region: "British Columbia",
+    country: "Canada",
+    rating: 4.8,
+    reviewsCount: 67,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Yesterday",
+    tags: ["Pacific Northwest", "Jumbo Berries", "Antioxidant Rich"],
+    is_available: true,
+  },
+  {
+    id: "prod-208",
+    name: "Coastal Heritage Red Raspberries",
+    slug: "coastal-red-raspberries",
+    category: "Fruits",
+    price: 5.49,
+    quantity: 40,
+    unit: "half-pint",
+    description: "Fragile ruby raspberries hand picked into individual punnets to protect their delicate structure. Incredible tart sweetness.",
+    image: [
+      "https://images.unsplash.com/photo-1577069808021-3e4f71a4f00b?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-12",
+    sellerName: "Fraser Valley Berry Collective",
+    sellerSlug: "fraser-valley-berry-collective",
+    farmName: "Fraser Valley Berry Collective",
+    distance: 2260,
+    lat: 49.0546,
+    lng: -122.328,
+    location: "Abbotsford, BC",
+    region: "British Columbia",
+    country: "Canada",
+    rating: 4.8,
+    reviewsCount: 31,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "This Morning",
+    tags: ["Hand Picked", "Delicate", "Coastal Harvest"],
+    is_available: true,
+  },
+
+  // ==========================================
+  // CANADA: PRAIRIES (AB & SK)
+  // ==========================================
+  {
+    id: "prod-209",
+    name: "Alberta Grass Fed Prime T-Bone Steak",
+    slug: "alberta-grass-fed-t-bone",
+    category: "Meat",
+    price: 18.99,
+    quantity: 35,
+    unit: "lb",
+    description: "Cut from foothill cattle raised entirely on native Alberta fescue grasses. Incredible beefy depth with strip loin and tenderloin in one bone in cut.",
+    image: [
+      "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-13",
+    sellerName: "Alberta Prairie Grasslands Ranch",
+    sellerSlug: "alberta-prairie-grasslands-ranch",
+    farmName: "Alberta Prairie Grasslands Ranch",
+    distance: 1890,
+    lat: 50.5814,
+    lng: -113.8744,
+    location: "High River, AB",
+    region: "Alberta",
+    country: "Canada",
+    rating: 5.0,
+    reviewsCount: 110,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Fresh Cut",
+    tags: ["Alberta Beef", "100% Grass Fed", "Dry Aged"],
+    is_available: true,
+  },
+  {
+    id: "prod-210",
+    name: "Free Range Pasture Bison Ribeye Steak",
+    slug: "prairie-bison-ribeye",
+    category: "Meat",
+    price: 22.5,
+    quantity: 25,
+    unit: "lb",
+    description: "Lean, nutrient dense Canadian plains bison ribeye. Sweet earthy flavor with half the fat of grain finished beef.",
+    image: [
+      "https://images.unsplash.com/photo-1558030006-450675393462?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-13",
+    sellerName: "Alberta Prairie Grasslands Ranch",
+    sellerSlug: "alberta-prairie-grasslands-ranch",
+    farmName: "Alberta Prairie Grasslands Ranch",
+    distance: 1890,
+    lat: 50.5814,
+    lng: -113.8744,
+    location: "High River, AB",
+    region: "Alberta",
+    country: "Canada",
+    rating: 5.0,
+    reviewsCount: 45,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Butcher Cut",
+    tags: ["Pasture Bison", "Lean Protein", "Iron Rich"],
+    is_available: true,
+  },
+  {
+    id: "prod-211",
+    name: "Saskatchewan Pure White Clover Honey",
+    slug: "prairie-white-clover-honey",
+    category: "Honey",
+    price: 11.99,
+    quantity: 50,
+    unit: "jar (500g)",
+    description: "Unfiltered white creamed clover honey from boundless Saskatchewan prairies. Gentle floral notes and velvety spreadable texture.",
+    image: [
+      "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-14",
+    sellerName: "Saskatchewan Golden Apiary",
+    sellerSlug: "saskatchewan-golden-apiary",
+    farmName: "Saskatchewan Golden Apiary",
+    distance: 1470,
+    lat: 50.2858,
+    lng: -107.7977,
+    location: "Swift Current, SK",
+    region: "Saskatchewan",
+    country: "Canada",
+    rating: 4.9,
+    reviewsCount: 48,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Raw Unheated",
+    tags: ["White Clover", "Prairie Honey", "Creamed"],
+    is_available: true,
+  },
+
+  // ==========================================
+  // CANADA: ATLANTIC (NS & PEI)
+  // ==========================================
+  {
+    id: "prod-212",
+    name: "Maritime Crisp Honeycrisp Apples",
+    slug: "annapolis-honeycrisp-apples",
+    category: "Fruits",
+    price: 3.99,
+    quantity: 85,
+    unit: "lb",
+    description: "Grown along the foggy salt kissed orchards of the Annapolis Valley. Celebrated for an explosive crisp bite and sweet tangy juice.",
+    image: [
+      "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-15",
+    sellerName: "Annapolis Valley Apple & Cider",
+    sellerSlug: "annapolis-valley-apple-cider",
+    farmName: "Annapolis Valley Apple & Cider",
+    distance: 510,
+    lat: 45.0911,
+    lng: -64.3644,
+    location: "Wolfville, NS",
+    region: "Nova Scotia",
+    country: "Canada",
+    rating: 5.0,
+    reviewsCount: 92,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Orchard Picked",
+    tags: ["Annapolis Valley", "Honeycrisp", "Maritime Grown"],
+    is_available: true,
+  },
+  {
+    id: "prod-213",
+    name: "Prince Edward Island Russet Baking Potatoes",
+    slug: "pei-russet-potatoes",
+    category: "Vegetables",
+    price: 4.99,
+    quantity: 120,
+    unit: "5lb bag",
+    description: "Famous PEI red soil russets. Fluffy, cloud like interior when baked with golden crispy jackets. The benchmark Canadian potato.",
+    image: [
+      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-16",
+    sellerName: "PEI Red Soil Potato Farm",
+    sellerSlug: "pei-red-soil-potato-farm",
+    farmName: "PEI Red Soil Potato Farm",
+    distance: 560,
+    lat: 46.4361,
+    lng: -63.6372,
+    location: "Kensington, PEI",
+    region: "Prince Edward Island",
+    country: "Canada",
+    rating: 4.9,
+    reviewsCount: 65,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Fresh Dug",
+    tags: ["PEI Potatoes", "Red Soil", "Baking Russets"],
+    is_available: true,
+  },
+
+  // ==========================================
+  // UNITED STATES: PACIFIC NORTHWEST
+  // ==========================================
+  {
+    id: "prod-214",
+    name: "Washington State Blush Rainier Cherries",
+    slug: "washington-rainier-cherries",
+    category: "Fruits",
+    price: 7.99,
+    quantity: 65,
+    unit: "lb",
+    description: "Golden yellow cherries with a soft crimson blush from Yakima Valley volcanic foothills. Very high sugar content and thin delicate skin.",
+    image: [
+      "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-17",
+    sellerName: "Yakima Valley Crisp Orchards",
+    sellerSlug: "yakima-valley-crisp-orchards",
+    farmName: "Yakima Valley Crisp Orchards",
+    distance: 2190,
+    lat: 46.6021,
+    lng: -120.5059,
+    location: "Yakima, WA",
+    region: "Washington",
+    country: "United States",
+    rating: 5.0,
+    reviewsCount: 175,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Hand Selected",
+    tags: ["Rainier Cherries", "Yakima Valley", "Sweet Blush"],
+    is_available: true,
+  },
+  {
+    id: "prod-215",
+    name: "Yakima Valley Cosmic Crisp Apples",
+    slug: "yakima-cosmic-crisp-apples",
+    category: "Fruits",
+    price: 3.99,
+    quantity: 95,
+    unit: "lb",
+    description: "Bred by Washington State University. Striking red blush with yellow lenticels resembling stars. Unbelievable crunch and sweet tart balance.",
+    image: [
+      "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-17",
+    sellerName: "Yakima Valley Crisp Orchards",
+    sellerSlug: "yakima-valley-crisp-orchards",
+    farmName: "Yakima Valley Crisp Orchards",
+    distance: 2190,
+    lat: 46.6021,
+    lng: -120.5059,
+    location: "Yakima, WA",
+    region: "Washington",
+    country: "United States",
+    rating: 5.0,
+    reviewsCount: 94,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Orchard Fresh",
+    tags: ["Cosmic Crisp", "Washington State", "Crunchy"],
+    is_available: true,
+  },
+  {
+    id: "prod-216",
+    name: "Roasted Oregon Willamette Valley Hazelnuts",
+    slug: "oregon-roasted-hazelnuts",
+    category: "Vegetables",
+    price: 8.99,
+    quantity: 50,
+    unit: "lb",
+    description: "Lightly roasted whole hazelnuts harvested from heritage orchards in the Willamette Valley. Buttery, rich, and fragrant.",
+    image: [
+      "https://images.unsplash.com/photo-1543208543-69279a0b165b?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-18",
+    sellerName: "Willamette Valley Nut & Berry Farm",
+    sellerSlug: "willamette-valley-nut-berry-farm",
+    farmName: "Willamette Valley Nut & Berry Farm",
+    distance: 2240,
+    lat: 44.9429,
+    lng: -123.0351,
+    location: "Salem, OR",
+    region: "Oregon",
+    country: "United States",
+    rating: 4.9,
+    reviewsCount: 82,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Fresh Roasted",
+    tags: ["Oregon Filberts", "Willamette Valley", "Roasted"],
+    is_available: true,
+  },
+
+  // ==========================================
+  // UNITED STATES: CALIFORNIA
+  // ==========================================
+  {
+    id: "prod-217",
+    name: "California Rich Creamy Hass Avocados",
+    slug: "sonoma-heirloom-avocados",
+    category: "Vegetables",
+    price: 5.49,
+    quantity: 75,
+    unit: "3-pack",
+    description: "Tree ripened California Hass avocados with thick pebbled skins and luscious nutty emerald flesh. Never artificially gassed.",
+    image: [
+      "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-19",
+    sellerName: "Sonoma Valley Organic Farmstead",
+    sellerSlug: "sonoma-valley-organic-farmstead",
+    farmName: "Sonoma Valley Organic Farmstead",
+    distance: 2360,
+    lat: 38.2919,
+    lng: -122.458,
+    location: "Sonoma, CA",
+    region: "California",
+    country: "United States",
+    rating: 5.0,
+    reviewsCount: 160,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Tree Harvested",
+    tags: ["Hass Avocado", "California Grown", "Nutty Flesh"],
+    is_available: true,
+  },
+  {
+    id: "prod-218",
+    name: "Estate Cold Pressed Extra Virgin Olive Oil",
+    slug: "estate-cold-pressed-olive-oil",
+    category: "Honey",
+    price: 16.99,
+    quantity: 40,
+    unit: "bottle (500ml)",
+    description: "Single estate Mission and Arbequina olives cold pressed within 4 hours of harvest in Sonoma County. Bright grassy notes with peppery finish.",
+    image: [
+      "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-19",
+    sellerName: "Sonoma Valley Organic Farmstead",
+    sellerSlug: "sonoma-valley-organic-farmstead",
+    farmName: "Sonoma Valley Organic Farmstead",
+    distance: 2360,
+    lat: 38.2919,
+    lng: -122.458,
+    location: "Sonoma, CA",
+    region: "California",
+    country: "United States",
+    rating: 5.0,
+    reviewsCount: 88,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Cold Pressed",
+    tags: ["Single Estate", "Extra Virgin", "First Cold Press"],
+    is_available: true,
+  },
+  {
+    id: "prod-219",
+    name: "Sweet Ruby Cara Cara Navel Oranges",
+    slug: "california-cara-cara-oranges",
+    category: "Fruits",
+    price: 3.99,
+    quantity: 110,
+    unit: "lb",
+    description: "Rosy pink flesh with extraordinarily sweet berry undertones and low acidity. Tree matured in sunny Central Valley groves.",
+    image: [
+      "https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-20",
+    sellerName: "Central Valley Citrus Groves",
+    sellerSlug: "central-valley-citrus-groves",
+    farmName: "Central Valley Citrus Groves",
+    distance: 2380,
+    lat: 36.7468,
+    lng: -119.7726,
+    location: "Fresno, CA",
+    region: "California",
+    country: "United States",
+    rating: 4.8,
+    reviewsCount: 71,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Tree Picked",
+    tags: ["Cara Cara", "Pink Navel", "Low Acidity"],
+    is_available: true,
+  },
+
+  // ==========================================
+  // UNITED STATES: MIDWEST & NORTHEAST
+  // ==========================================
+  {
+    id: "prod-220",
+    name: "Door County Montmorency Tart Red Cherries",
+    slug: "door-county-tart-cherries",
+    category: "Fruits",
+    price: 6.49,
+    quantity: 55,
+    unit: "quart",
+    description: "Famous ruby red tart cherries grown on the cool Wisconsin peninsula. The gold standard for homemade cherry pies and preserves.",
+    image: [
+      "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-21",
+    sellerName: "Door County Cherry Orchards",
+    sellerSlug: "door-county-cherry-orchards",
+    farmName: "Door County Cherry Orchards",
+    distance: 690,
+    lat: 44.8342,
+    lng: -87.377,
+    location: "Sturgeon Bay, WI",
+    region: "Wisconsin",
+    country: "United States",
+    rating: 4.9,
+    reviewsCount: 89,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Fresh Harvest",
+    tags: ["Door County", "Montmorency", "Tart Pie Cherry"],
+    is_available: true,
+  },
+  {
+    id: "prod-221",
+    name: "Wisconsin Cave Aged Sharp White Cheddar",
+    slug: "wisconsin-aged-white-cheddar",
+    category: "Dairy",
+    price: 8.99,
+    quantity: 40,
+    unit: "block (8oz)",
+    description: "Aged for two full years in stone caves until crunchy calcium crystals develop. Intensely tangy, crumbly, and buttery.",
+    image: [
+      "https://images.unsplash.com/photo-1618164436241-4473940d1f5c?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-21",
+    sellerName: "Door County Cherry Orchards",
+    sellerSlug: "door-county-cherry-orchards",
+    farmName: "Door County Cherry Orchards",
+    distance: 690,
+    lat: 44.8342,
+    lng: -87.377,
+    location: "Sturgeon Bay, WI",
+    region: "Wisconsin",
+    country: "United States",
+    rating: 4.9,
+    reviewsCount: 52,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Cave Aged 2 Years",
+    tags: ["Wisconsin Cheese", "Cave Aged", "Sharp Cheddar"],
+    is_available: true,
+  },
+  {
+    id: "prod-222",
+    name: "Amish Country Free Range Brown Eggs",
+    slug: "pennsylvania-brown-farm-eggs",
+    category: "Dairy",
+    price: 4.99,
+    quantity: 90,
+    unit: "dozen",
+    description: "Gathered by hand daily from heritage hens roaming lush clover pastures in Lancaster County. Deep amber yolks and thick egg whites.",
+    image: [
+      "https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-22",
+    sellerName: "Lancaster County Amish Farmstead",
+    sellerSlug: "lancaster-county-amish-farmstead",
+    farmName: "Lancaster County Amish Farmstead",
+    distance: 360,
+    lat: 40.0379,
+    lng: -76.3055,
+    location: "Lancaster, PA",
+    region: "Pennsylvania",
+    country: "United States",
+    rating: 5.0,
+    reviewsCount: 145,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Collected Today",
+    tags: ["Amish Farm", "Deep Amber Yolks", "Free Range"],
+    is_available: true,
+  },
+  {
+    id: "prod-223",
+    name: "Vermont Grade A Dark Robust Maple Syrup",
+    slug: "vermont-dark-robust-maple-syrup",
+    category: "Honey",
+    price: 13.99,
+    quantity: 60,
+    unit: "jug (16oz)",
+    description: "Traditional wood fired late season boil in Stowe Vermont. Full bodied hearty maple flavor that anchors pancakes and glazes.",
+    image: [
+      "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-23",
+    sellerName: "Green Mountain Maple & Dairy",
+    sellerSlug: "green-mountain-maple-dairy",
+    farmName: "Green Mountain Maple & Dairy",
+    distance: 85,
+    lat: 44.4654,
+    lng: -72.6874,
+    location: "Stowe, VT",
+    region: "Vermont",
+    country: "United States",
+    rating: 5.0,
+    reviewsCount: 165,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Wood Fired",
+    tags: ["Vermont Maple", "Dark Robust", "Wood Boil"],
+    is_available: true,
+  },
+
+  // ==========================================
+  // UNITED STATES: SOUTH & SOUTHWEST
+  // ==========================================
+  {
+    id: "prod-224",
+    name: "Texas Fredericksburg Sweet Peaches",
+    slug: "texas-hill-country-peaches",
+    category: "Fruits",
+    price: 4.99,
+    quantity: 70,
+    unit: "lb",
+    description: "Famous Hill Country granite gravel peaches, baked by warm Texas sunshine. High natural brix sweetness and fragrant aroma.",
+    image: [
+      "https://images.unsplash.com/photo-1595124245030-41448b199d6d?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-24",
+    sellerName: "Texas Hill Country Orchard Ranch",
+    sellerSlug: "texas-hill-country-orchard-ranch",
+    farmName: "Texas Hill Country Orchard Ranch",
+    distance: 1720,
+    lat: 30.2752,
+    lng: -98.8719,
+    location: "Fredericksburg, TX",
+    region: "Texas",
+    country: "United States",
+    rating: 4.9,
+    reviewsCount: 104,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Tree Picked",
+    tags: ["Fredericksburg", "Texas Hill Country", "High Brix"],
+    is_available: true,
+  },
+  {
+    id: "prod-225",
+    name: "Texas Hill Country Mammoth Shelled Pecans",
+    slug: "shelled-mammoth-texas-pecans",
+    category: "Vegetables",
+    price: 9.99,
+    quantity: 50,
+    unit: "lb",
+    description: "Freshly shelled mammoth pecan halves harvested from native groves along Texas river valleys. Rich, buttery, and crunch ready.",
+    image: [
+      "https://images.unsplash.com/photo-1543208543-69279a0b165b?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-24",
+    sellerName: "Texas Hill Country Orchard Ranch",
+    sellerSlug: "texas-hill-country-orchard-ranch",
+    farmName: "Texas Hill Country Orchard Ranch",
+    distance: 1720,
+    lat: 30.2752,
+    lng: -98.8719,
+    location: "Fredericksburg, TX",
+    region: "Texas",
+    country: "United States",
+    rating: 4.9,
+    reviewsCount: 78,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Fresh Shelled",
+    tags: ["Native Pecan", "Mammoth Halves", "Texas Harvest"],
+    is_available: true,
+  },
+  {
+    id: "prod-226",
+    name: "Georgia Sweet Elberta Orchard Peaches",
+    slug: "georgia-elberta-sweet-peaches",
+    category: "Fruits",
+    price: 4.49,
+    quantity: 80,
+    unit: "lb",
+    description: "The classic American peach from deep red Georgia clay groves. Velvety skin with yellow orange flesh brimming with southern sunshine.",
+    image: [
+      "https://images.unsplash.com/photo-1595124245030-41448b199d6d?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-25",
+    sellerName: "Georgia Sweet Peach Groves",
+    sellerSlug: "georgia-sweet-peach-groves",
+    farmName: "Georgia Sweet Peach Groves",
+    distance: 980,
+    lat: 32.5532,
+    lng: -83.8874,
+    location: "Fort Valley, GA",
+    region: "Georgia",
+    country: "United States",
+    rating: 4.9,
+    reviewsCount: 128,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Morning Picked",
+    tags: ["Georgia Peach", "Elberta", "Southern Classic"],
+    is_available: true,
+  },
+  {
+    id: "prod-227",
+    name: "Genuine Georgia Field Vidalia Sweet Onions",
+    slug: "fresh-vidalia-sweet-onions",
+    category: "Vegetables",
+    price: 3.29,
+    quantity: 90,
+    unit: "3lb bag",
+    description: "Flat, sweet Vidalia onions grown exclusively in low sulfur Georgia fields. So sweet and juicy they can be sliced raw on sandwiches.",
+    image: [
+      "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=800&auto=format&fit=crop&q=80",
+    ],
+    sellerId: "seller-25",
+    sellerName: "Georgia Sweet Peach Groves",
+    sellerSlug: "georgia-sweet-peach-groves",
+    farmName: "Georgia Sweet Peach Groves",
+    distance: 980,
+    lat: 32.5532,
+    lng: -83.8874,
+    location: "Fort Valley, GA",
+    region: "Georgia",
+    country: "United States",
+    rating: 4.9,
+    reviewsCount: 64,
+    pickupAvailable: true,
+    deliveryAvailable: true,
+    harvestDate: "Field Cured",
+    tags: ["Vidalia Onion", "Sweet Onion", "Georgia Original"],
+    is_available: true,
+  },
 ];
 
 /**
- * Filter mock products in memory without hitting the database.
+ * Filter mock products in memory with dynamic distance calculation
  */
 export function filterMockProducts(params: {
   query?: string;
@@ -916,6 +1764,7 @@ export function filterMockProducts(params: {
   distance?: number;
   pickupAvailable?: boolean;
   deliveryAvailable?: boolean;
+  userCoord?: { lat: number; lng: number };
 }): EnhancedProduct[] {
   const {
     query,
@@ -925,9 +1774,35 @@ export function filterMockProducts(params: {
     distance,
     pickupAvailable,
     deliveryAvailable,
+    userCoord,
   } = params;
 
-  return MOCK_PRODUCTS.filter((product) => {
+  // Compute calculated distance for all mock items first
+  const withDistance = MOCK_PRODUCTS.map((prod) => {
+    const matchedSeller =
+      getSellerForProductSlug(prod.slug || "") || (prod.sellerId ? getSellerById(prod.sellerId) : undefined);
+    const farmLat = prod.lat ?? matchedSeller?.lat;
+    const farmLng = prod.lng ?? matchedSeller?.lng;
+
+    let computedDistance = prod.distance ?? matchedSeller?.distance ?? 10;
+    if (userCoord && farmLat !== undefined && farmLng !== undefined) {
+      computedDistance = calculateDistanceMiles(userCoord.lat, userCoord.lng, farmLat, farmLng);
+    }
+
+    return {
+      ...prod,
+      distance: computedDistance,
+      lat: farmLat,
+      lng: farmLng,
+      location: prod.location ?? matchedSeller?.location,
+      region: prod.region ?? matchedSeller?.region,
+      country: prod.country ?? matchedSeller?.country,
+      farmName: prod.farmName ?? matchedSeller?.name,
+      sellerName: prod.sellerName ?? matchedSeller?.name,
+    };
+  });
+
+  const filtered = withDistance.filter((product) => {
     if (category && category.trim()) {
       const targetCategory = category.trim().toLowerCase();
       if ((product.category ?? "").toLowerCase() !== targetCategory) {
@@ -942,6 +1817,8 @@ export function filterMockProducts(params: {
       const matchCategory = (product.category ?? "").toLowerCase().includes(q);
       const matchFarm = (product.farmName ?? "").toLowerCase().includes(q);
       const matchSeller = (product.sellerName ?? "").toLowerCase().includes(q);
+      const matchLocation = (product.location ?? "").toLowerCase().includes(q);
+      const matchRegion = (product.region ?? "").toLowerCase().includes(q);
       const matchTags = (product.tags ?? []).some((t) => t.toLowerCase().includes(q));
 
       if (
@@ -950,6 +1827,8 @@ export function filterMockProducts(params: {
         !matchCategory &&
         !matchFarm &&
         !matchSeller &&
+        !matchLocation &&
+        !matchRegion &&
         !matchTags
       ) {
         return false;
@@ -977,13 +1856,18 @@ export function filterMockProducts(params: {
 
     return true;
   });
+
+  // Closest products match first
+  filtered.sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999));
+  return filtered;
 }
 
 /**
- * Merge live database products with mock catalog (database products take precedence).
+ * Merge live database products with mock catalog and compute distances based on user location.
  */
 export function mergeWithMockCatalog(
-  dbProducts: Product[] | undefined | null
+  dbProducts: Product[] | undefined | null,
+  userCoord?: { lat: number; lng: number }
 ): EnhancedProduct[] {
   const list = Array.isArray(dbProducts) ? [...dbProducts] : [];
   const seenSlugs = new Set<string>();
@@ -996,9 +1880,20 @@ export function mergeWithMockCatalog(
     if (item.slug) seenSlugs.add(item.slug.toLowerCase());
     if (item.name) seenNames.add(item.name.toLowerCase());
     const matchedSeller = item.slug ? getSellerForProductSlug(item.slug) : undefined;
+
+    let computedDist = matchedSeller?.distance ?? 2.5;
+    if (userCoord && matchedSeller?.lat !== undefined && matchedSeller?.lng !== undefined) {
+      computedDist = calculateDistanceMiles(userCoord.lat, userCoord.lng, matchedSeller.lat, matchedSeller.lng);
+    }
+
     result.push({
       ...item,
-      distance: matchedSeller?.distance ?? 2.5,
+      distance: computedDist,
+      lat: matchedSeller?.lat,
+      lng: matchedSeller?.lng,
+      location: matchedSeller?.location ?? "Montreal Area, QC",
+      region: matchedSeller?.region ?? "Quebec",
+      country: matchedSeller?.country ?? "Canada",
       farmName: matchedSeller?.name ?? "Local Verified Farm",
       sellerName: matchedSeller?.name ?? "Local Verified Farm",
       sellerSlug: matchedSeller?.slug ?? "local-verified-farm",
@@ -1018,11 +1913,33 @@ export function mergeWithMockCatalog(
     const nameKey = (mock.name ?? "").toLowerCase();
 
     if (!seenSlugs.has(slugKey) && !seenNames.has(nameKey)) {
-      result.push(mock);
+      const matchedSeller =
+        getSellerForProductSlug(mock.slug || "") || (mock.sellerId ? getSellerById(mock.sellerId) : undefined);
+      const farmLat = mock.lat ?? matchedSeller?.lat;
+      const farmLng = mock.lng ?? matchedSeller?.lng;
+
+      let computedDist = mock.distance ?? matchedSeller?.distance ?? 10;
+      if (userCoord && farmLat !== undefined && farmLng !== undefined) {
+        computedDist = calculateDistanceMiles(userCoord.lat, userCoord.lng, farmLat, farmLng);
+      }
+
+      result.push({
+        ...mock,
+        distance: computedDist,
+        lat: farmLat,
+        lng: farmLng,
+        location: mock.location ?? matchedSeller?.location,
+        region: mock.region ?? matchedSeller?.region,
+        country: mock.country ?? matchedSeller?.country,
+        farmName: mock.farmName ?? matchedSeller?.name,
+        sellerName: mock.sellerName ?? matchedSeller?.name,
+      });
       seenSlugs.add(slugKey);
       seenNames.add(nameKey);
     }
   }
 
+  // Sort by distance ascending so closest products appear first
+  result.sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999));
   return result;
 }
